@@ -1,7 +1,7 @@
 # estraces - Traces and trace sets Python library for side-channel attacks
 
 [![pipeline status](https://gitlab.com/eshard/estraces/badges/master/pipeline.svg)](https://gitlab.com/eshard/estraces/commits/master)
-[![PyPI version](https://badge.fury.io/py/estraces.svg)](https://badge.fury.io/py/estraces)
+[![PyPI version](https://badge.fury.io/py/estraces.svg)](https://pypi.org/project/estraces/)
 [![Conda installer](https://anaconda.org/eshard/estraces/badges/installer/conda.svg)](https://anaconda.org/eshard/estraces)
 [![Latest Conda release](https://anaconda.org/eshard/estraces/badges/latest_release_date.svg)](https://anaconda.org/eshard/estraces)
 
