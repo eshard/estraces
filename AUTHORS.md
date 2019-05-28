@@ -13,7 +13,7 @@
 - Benoit Feix
 - Georges Gagnerot
 - Nadia Mourier (@Nanou89)
-- Tian Razafindralambo (@razaaina)
+- Tiana Razafindralambo (@razaina)
 - Lionel Rivière
 - Hugues Thiebeauld
 - Benjamin Timon
