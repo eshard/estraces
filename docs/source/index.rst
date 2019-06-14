@@ -3,7 +3,7 @@
     :align: right
 
 Welcome to estraces documentation!
-=======================================
+==================================
 
 .. toctree::
    :maxdepth: 2
