@@ -1,137 +1,479 @@
 from .context import estraces  # noqa
-import unittest
 import numpy as np
 import os
-from estraces.formats.ets_writer import ETSWriter
+from estraces import ETSWriter
 from estraces import read_ths_from_ets_file
+import pytest
+
+nb_trace = 10
+nb_points = 10
+filename = 'ETS-test.ets'
+filename_1 = 'ETS1.ets'
+filename_2 = 'ETS2.ets'
+filename_3 = 'ETS3.ets'
 
 
-class TestETSWriter(unittest.TestCase):
-    nb_trace = 10
-    nb_points = 10
-    filename = 'ETS-test.ets'
-    filename_1 = 'ETS1.ets'
-    filename_2 = 'ETS2.ets'
-    filename_3 = 'ETS3.ets'
+@pytest.fixture
+def ets_filenames():
+    try:
+        os.remove(filename)
+        os.remove(filename_1)
+        os.remove(filename_2)
+        os.remove(filename_3)
+    except FileNotFoundError:
+        pass
+    yield [filename, filename_1, filename_2, filename_3]
+    try:
+        os.remove(filename)
+        os.remove(filename_1)
+        os.remove(filename_2)
+        os.remove(filename_3)
+    except FileNotFoundError:
+        pass
 
-    def setUp(self):
-        try:
-            os.remove(self.filename)
-            os.remove(self.filename_1)
-            os.remove(self.filename_2)
-            os.remove(self.filename_3)
-        except FileNotFoundError:
-            pass
 
-    def test_ets_writer_works_whatever_is_the_index_order(self):
-        # Tests for issue https://gitlab.eshard.int/side-channel/estoolkit/issues/237.
-        # ETSWriter doesn't behave properly if ETSWriter.write_points is called several times with unordered index.
+def test_ets_writer_raises_exception_if_trying_to_replace_existing_data_wo_overwrite_mode(ets_filenames):
+    out = ETSWriter(filename)
+    datas = np.random.randint(100, size=(nb_trace, nb_points), dtype=np.uint8)
+    out.write_samples(datas)
+    out.close()
+    out = ETSWriter(filename)
+    with pytest.raises(estraces.ETSWriterException):
+        out.write_samples(datas, index=0)
+    out.close()
+    out = ETSWriter(filename, overwrite=True)
+    replacement = np.random.randint(100, size=(nb_trace - 5, nb_points), dtype=np.uint8)
+    out.write_samples(replacement, index=0)
+    ths = out.get_reader()
+    assert np.array_equal(ths.samples[:nb_trace - 5], replacement)
 
-        base_trace = np.random.randint(0, 256, (3000))
 
-        ets1 = ETSWriter(self.filename_1, overwrite=True)
-        indexes = np.arange(5)
-        for ind in indexes:
-            ets1.write_points(base_trace, index=ind)
-        ets1.close()
+def test_ets_writer_works_whatever_is_the_index_order(ets_filenames):
+    base_trace = np.random.randint(0, 256, (nb_points, nb_trace), dtype='uint8')
 
-        ets2 = ETSWriter(self.filename_2, overwrite=True)
+    ets1 = ETSWriter(filename_1, overwrite=True)
+    indexes = np.arange(nb_trace)
+    for ind in indexes:
+        ets1.write_samples(base_trace[ind], index=ind)
+    ets1.close()
 
-        for ind in reversed(indexes):
-            ets2.write_points(base_trace, index=ind)
-        ets2.close()
+    ets2 = ETSWriter(filename_2, overwrite=True)
 
-        ets3 = ETSWriter(self.filename_3, overwrite=True)
-        indexes_3 = [4, 2, 1]
-        for ind in indexes_3:
-            ets3.write_points(base_trace, index=ind)
-        ets3.close()
+    for ind in reversed(indexes):
+        ets2.write_samples(base_trace[ind], index=ind)
+    ets2.close()
 
-        d1 = read_ths_from_ets_file(self.filename_1).samples[:]
-        d2 = read_ths_from_ets_file(self.filename_2).samples[:]
-        d3 = read_ths_from_ets_file(self.filename_3).samples[:]
-        self.assertEqual(d1.shape, d2.shape)
-        self.assertEqual(d1.shape, d3.shape)
+    ets3 = ETSWriter(filename_3, overwrite=True)
+    indexes_3 = [9, 2, 1]
+    for ind in indexes_3:
+        ets3.write_samples(base_trace[ind], index=ind)
+    ets3.close()
 
-        self.assertTrue(np.array_equal(d1[2], d3[2]))
+    d1 = read_ths_from_ets_file(filename_1).samples[:]
+    d2 = read_ths_from_ets_file(filename_2).samples[:]
+    d3 = read_ths_from_ets_file(filename_3).samples[:]
+    print(d1.shape, d2.shape, d3.shape)
+    assert np.array_equal(d1[9], d3[9])
+    assert np.array_equal(d1[2], d3[2])
+    assert np.array_equal(d1[1], d3[1])
 
-        s1 = os.path.getsize(self.filename_1)
-        s2 = os.path.getsize(self.filename_2)
+    assert d1.shape == d2.shape
+    assert d1.shape == d3.shape
 
-        self.assertEqual(s1, s2)
+    s1 = os.path.getsize(filename_1)
+    s2 = os.path.getsize(filename_2)
 
-    def test_write_ndarray(self):
-        out = ETSWriter(self.filename, overwrite=True)
+    assert s1 == s2
 
-        datas = np.random.randint(100, size=(self.nb_trace, self.nb_points), dtype=np.uint8)
-        plaintext = np.random.randint(256, size=(self.nb_trace, 16), dtype=np.uint8)
-        for index, data in enumerate(datas):
-            out.write_points(data, index=index)
-            out.write_meta(tag='plaintext', metadata=plaintext[index], index=index)
 
-        ths = out.get_reader()
-        for i, t in enumerate(ths):
-            self.assertTrue(np.array_equal(t.samples[:], datas[i]))
-            self.assertTrue(np.array_equal(t.plaintext, plaintext[i]))
+def test_write_ndarray(ets_filenames):
+    out = ETSWriter(filename, overwrite=True)
 
-    def test_write_2d_ndarray_metadata(self):
-        out = ETSWriter(self.filename, overwrite=True)
+    datas = np.random.randint(100, size=(nb_trace, nb_points), dtype=np.uint8)
+    plaintext = np.random.randint(256, size=(nb_trace, 16), dtype=np.uint8)
+    for index, data in enumerate(datas):
+        out.write_samples(data, index=index)
+        out.write_metadata('plaintext', plaintext[index], index=index)
 
-        datas = np.random.randint(100, size=(self.nb_trace, self.nb_points), dtype=np.uint8)
-        plaintext = np.random.randint(256, size=(self.nb_trace, 16), dtype=np.uint8)
-        for index, data in enumerate(datas):
-            out.write_points(data, index=index)
-            out.write_meta(tag='plaintext', metadata=plaintext[index][None, :], index=index)
+    ths = out.get_reader()
+    for i, t in enumerate(ths):
+        print(i, t.samples.array, datas[i])
+        print(i, t.plaintext, plaintext[i])
+        assert np.array_equal(t.samples[:], datas[i])
+        assert np.array_equal(t.plaintext, plaintext[i])
 
-        ths = out.get_reader()
-        for i, t in enumerate(ths):
-            self.assertTrue(np.array_equal(t.samples[:], datas[i]))
-            self.assertTrue(np.array_equal(t.plaintext, plaintext[i]))
 
-    def test_write_2d_ndarray_points(self):
-        out = ETSWriter(self.filename, overwrite=True)
+def test_write_2d_ndarray_metadata(ets_filenames):
+    out = ETSWriter(filename, overwrite=True)
 
-        datas = np.random.randint(100, size=(self.nb_trace, self.nb_points), dtype=np.uint8)
-        for index, data in enumerate(datas):
-            with self.assertRaises(Exception):
-                out.write_points(data[None, :], index=index)
+    datas = np.random.randint(100, size=(nb_trace, nb_points), dtype=np.uint8)
+    plaintext = np.random.randint(256, size=(nb_trace, 16), dtype=np.uint8)
+    for index, data in enumerate(datas):
+        out.write_samples(data, index=index)
+        out.write_metadata('plaintext', plaintext[index][None, :], index=index)
 
-    def test_write_points_length_1(self):
-        out = ETSWriter(self.filename, overwrite=True)
+    ths = out.get_reader()
+    for i, t in enumerate(ths):
+        assert np.array_equal(t.samples[:], datas[i])
+        assert np.array_equal(t.plaintext, plaintext[i])
 
-        datas = np.random.randint(100, size=(self.nb_trace, self.nb_points), dtype=np.uint8)
-        for index, data in enumerate(datas):
-            out.write_points(np.array([10]), index=index)
-        ths = out.get_reader()
-        self.assertTrue(np.array_equal(ths[0].samples[:], np.array([10])))
 
-    def test_write_meta_length_1(self):
-        out = ETSWriter(self.filename, overwrite=True)
+def test_write_2d_ndarray_points(ets_filenames):
+    out = ETSWriter(filename, overwrite=True)
+    datas = np.random.randint(100, size=(nb_trace, nb_points), dtype=np.uint8)
+    out.write_samples(datas)
+    ths = out.get_reader()
+    assert np.array_equal(ths.samples.array, datas)
 
-        datas = np.random.randint(100, size=(self.nb_trace, self.nb_points), dtype=np.uint8)
-        for index, data in enumerate(datas):
-            out.write_points(data, index=index)
-            out.write_meta(tag='plaintext', metadata=22, index=index)
 
-        ths = out.get_reader()
-        self.assertTrue(np.array_equal(ths[0].plaintext, np.array([22])))
+def test_write_points_length_1(ets_filenames):
+    out = ETSWriter(filename, overwrite=True)
 
-    def test_write_meta_string(self):
-        out = ETSWriter(self.filename, overwrite=True)
+    datas = np.random.randint(100, size=(nb_trace, nb_points), dtype=np.uint8)
+    for index, data in enumerate(datas):
+        out.write_samples(np.array([10]), index=index)
+    ths = out.get_reader()
+    assert np.array_equal(ths[0].samples[:], np.array([10]))
 
-        datas = np.random.randint(100, size=(self.nb_trace, self.nb_points), dtype=np.uint8)
-        for index, data in enumerate(datas):
-            out.write_points(data, index=index)
-            out.write_meta(tag='plaintext', metadata='azerty', index=index)
 
-        ths = out.get_reader()
-        self.assertEqual(ths[0].plaintext, 'azerty')
+def test_write_meta_length_1(ets_filenames):
+    out = ETSWriter(filename, overwrite=True)
 
-    def tearDown(self):
-        try:
-            os.remove(self.filename)
-            os.remove(self.filename_1)
-            os.remove(self.filename_2)
-            os.remove(self.filename_3)
-        except FileNotFoundError:
-            pass
+    datas = np.random.randint(100, size=(nb_trace, nb_points), dtype=np.uint8)
+    for index, data in enumerate(datas):
+        out.write_samples(data, index=index)
+        out.write_metadata('plaintext', 22, index=index)
+
+    ths = out.get_reader()
+    assert np.array_equal(ths[0].plaintext, np.array([22]))
+
+
+def test_write_meta_string(ets_filenames):
+    out = ETSWriter(filename, overwrite=True)
+
+    datas = np.random.randint(100, size=(nb_trace, nb_points), dtype=np.uint8)
+    for index, data in enumerate(datas):
+        out.write_samples(data, index=index)
+        out.write_metadata('plaintext', 'azerty', index=index)
+
+    ths = out.get_reader()
+    assert ths[0].plaintext == 'azerty'
+
+
+def test_write_samples_1d(ets_filenames):
+    out = ETSWriter(filename, overwrite=True)
+    datas = np.random.randint(100, size=(nb_trace, nb_points), dtype=np.uint8)
+    ths = estraces.formats.read_ths_from_ram(datas)
+    out.add_samples(ths[0].samples)
+    out.add_samples(ths[1].samples)
+    ths_2 = out.get_reader()
+    assert np.array_equal(ths[0].samples.array, ths_2[0].samples.array)
+    assert np.array_equal(ths[1].samples.array, ths_2[1].samples.array)
+    out.close()
+    out = ETSWriter(filename)
+    out.add_samples(ths[2].samples)
+    ths_2 = out.get_reader()
+    assert np.array_equal(ths[2].samples.array, ths_2[2].samples.array)
+
+
+def test_add_samples_2d(ets_filenames):
+    out = ETSWriter(filename, overwrite=True)
+    datas = np.random.randint(100, size=(nb_trace, nb_points), dtype=np.uint8)
+    ths = estraces.formats.read_ths_from_ram(datas)
+    out.add_samples(ths.samples)
+    ths_2 = out.get_reader()
+    assert np.array_equal(ths.samples.array, ths_2.samples.array)
+
+
+def test_add_samples_raise_exception_if_not_samples_instance(ets_filenames):
+    out = ETSWriter(filename)
+    with pytest.raises(TypeError):
+        out.add_samples([1, 2, 3])
+
+
+def test_add_samples_truncate_samples_to_first_inserted_data_size(ets_filenames):
+    out = ETSWriter(filename, overwrite=True)
+    datas = np.random.randint(100, size=(nb_trace, nb_points), dtype=np.uint8)
+    ths = estraces.formats.read_ths_from_ram(datas)
+    out.add_samples(ths.samples)
+    ths_2 = estraces.formats.read_ths_from_ram(np.random.randint(100, size=(nb_trace, nb_points + 10), dtype=np.uint8))
+    out.add_samples(ths_2.samples)
+    ths_4 = estraces.formats.read_ths_from_ram(np.random.randint(100, size=(nb_trace, nb_points - 10), dtype=np.uint8))
+    out.add_samples(ths_4.samples)
+    ths_3 = out.get_reader()
+    assert len(ths_3[0].samples) == nb_points
+
+
+def test_writer_open_a_new_file(ets_filenames):
+    out = ETSWriter(filename, overwrite=True)
+    datas = np.random.randint(100, size=(nb_trace, nb_points), dtype=np.uint8)
+    ths = estraces.formats.read_ths_from_ram(datas)
+    out.add_samples(ths[0].samples)
+    out.close()
+    ths_2 = estraces.read_ths_from_ets_file(filename)
+    assert np.array_equal(ths_2[0].samples.array, ths[0].samples.array)
+    assert len(ths_2) == 1
+    os.remove(filename)
+
+
+def test_writer_open_an_existing_file_and_append_to(ets_filenames):
+    out = ETSWriter(filename)
+    datas = np.random.randint(100, size=(nb_trace, nb_points), dtype=np.uint8)
+    ths = estraces.formats.read_ths_from_ram(datas)
+    out.add_samples(ths[0].samples)
+    out.close()
+    out = ETSWriter(filename)
+    out.add_samples(ths[1].samples)
+    out.close()
+    ths_2 = estraces.read_ths_from_ets_file(filename)
+    assert len(ths_2) == 2
+    assert np.array_equal(ths_2.samples.array, ths[0:2].samples.array)
+    os.remove(filename)
+
+
+def test_writer_overwrite_an_existing_file(ets_filenames):
+    out = ETSWriter(filename)
+    datas = np.random.randint(100, size=(nb_trace, nb_points), dtype=np.uint8)
+    ths = estraces.formats.read_ths_from_ram(datas)
+    out.add_samples(ths[0].samples)
+    out.close()
+    out = ETSWriter(filename, overwrite=True)
+    out.add_samples(ths[1].samples)
+    out.close()
+    ths_2 = estraces.read_ths_from_ets_file(filename)
+    assert len(ths_2) == 1
+    assert np.array_equal(ths_2.samples.array, ths[1:2].samples.array)
+    os.remove(filename)
+
+
+def test_ets_writer_add_metadata_for_1_trace(ets_filenames):
+    out = ETSWriter(filename)
+    datas = np.random.randint(0, 256, size=(nb_trace, nb_points), dtype=np.uint8)
+    plaintext = np.random.randint(0, 256, (nb_trace, 16), dtype='uint8')
+    chair = np.array(['abcd' for i in range(nb_trace)])
+    ciphertext = np.random.randint(0, 256, (nb_trace, 16), dtype='uint8')
+
+    ths = estraces.formats.read_ths_from_ram(
+        datas,
+        chair=chair,
+        plaintext=plaintext,
+        ciphertext=ciphertext
+    )
+
+    out.add_samples(ths.samples)
+    for i in range(nb_trace):
+        out.add_metadata(ths[i].metadatas)
+    out_ths = out.get_reader()
+    assert np.array_equal(out_ths.plaintext, plaintext)
+    assert np.array_equal(out_ths.ciphertext, ciphertext)
+    assert np.array_equal(out_ths.chair, chair)
+
+
+def test_ets_writer_add_metadata_for_several_traces(ets_filenames):
+    out = ETSWriter(filename)
+    datas = np.random.randint(0, 256, size=(nb_trace, nb_points), dtype=np.uint8)
+    plaintext = np.random.randint(0, 256, (nb_trace, 16), dtype='uint8')
+    chair = np.array(['abcd' for i in range(nb_trace)])
+    ciphertext = np.random.randint(0, 256, (nb_trace, 16), dtype='uint8')
+
+    ths = estraces.formats.read_ths_from_ram(
+        datas,
+        chair=chair,
+        plaintext=plaintext,
+        ciphertext=ciphertext
+    )
+
+    out.add_samples(ths.samples)
+    out.add_metadata(ths.metadatas)
+    out_ths = out.get_reader()
+    assert np.array_equal(out_ths.plaintext, plaintext)
+    assert np.array_equal(out_ths.ciphertext, ciphertext)
+    assert np.array_equal(out_ths.chair.tolist(), chair.tolist())
+
+
+def test_ets_writer_raises_exception_if_metadatas_is_not_proper_type(ets_filenames):
+    out = ETSWriter(filename)
+    with pytest.raises(TypeError):
+        out.add_metadata({"dic": 1})
+
+
+def test_ets_writer_add_metadata_with_inconsistent_sizes(ets_filenames):
+    out = ETSWriter(filename)
+    datas = np.random.randint(0, 256, size=(nb_trace, nb_points), dtype=np.uint8)
+    plaintext = np.random.randint(0, 256, (nb_trace, 16), dtype='uint8')
+    chair = np.array(['abcd' for i in range(nb_trace)])
+    ciphertext = np.random.randint(0, 256, (nb_trace, 16), dtype='uint8')
+
+    ths = estraces.formats.read_ths_from_ram(
+        datas,
+        chair=chair,
+        plaintext=plaintext,
+        ciphertext=ciphertext
+    )
+
+    out.add_samples(ths.samples)
+    out.add_metadata(ths.metadatas)
+
+    datas = np.random.randint(0, 256, size=(nb_trace, nb_points), dtype=np.uint8)
+    plaintext = np.random.randint(0, 256, (nb_trace, 18), dtype='uint8')
+    ths = estraces.formats.read_ths_from_ram(
+        datas,
+        chair=chair,
+        plaintext=plaintext,
+        ciphertext=ciphertext
+    )
+    out.add_metadata(ths.metadatas)
+    ths = out.get_reader()
+    assert ths.plaintext.shape == (2 * nb_trace, 16)
+
+
+def test_ets_writer_add_trace(ets_filenames):
+
+    out = ETSWriter(filename)
+    datas = np.random.randint(0, 256, size=(nb_trace, nb_points), dtype=np.uint8)
+    plaintext = np.random.randint(0, 256, (nb_trace, 16), dtype='uint8')
+    chair = np.array(['abcd' for i in range(nb_trace)])
+    ciphertext = np.random.randint(0, 256, (nb_trace, 16), dtype='uint8')
+
+    ths = estraces.formats.read_ths_from_ram(
+        datas,
+        chair=chair,
+        plaintext=plaintext,
+        ciphertext=ciphertext
+    )
+    out.add_trace(ths[0])
+
+    out_ths = out.get_reader()
+    assert np.array_equal(out_ths[0].plaintext, plaintext[0])
+    assert np.array_equal(out_ths[0].ciphertext, ciphertext[0])
+    assert out_ths[0].chair == chair.tolist()[0]
+    assert np.array_equal(out_ths[0].samples.array, datas[0])
+
+
+def test_ets_writer_add_trace_raises_exception_if_trace_has_improper_types(ets_filenames):
+    out = ETSWriter(filename)
+    with pytest.raises(TypeError):
+        out.add_trace({'not': 'a trace'})
+
+
+def test_ets_writer_add_trace_raises_exception_if_metadata_are_inconsistent(ets_filenames):
+    out = ETSWriter(filename)
+    datas = np.random.randint(0, 256, size=(nb_trace, nb_points), dtype=np.uint8)
+    plaintext = np.random.randint(0, 256, (nb_trace, 16), dtype='uint8')
+    chair = np.array(['abcd' for i in range(nb_trace)])
+    ciphertext = np.random.randint(0, 256, (nb_trace, 16), dtype='uint8')
+
+    ths = estraces.formats.read_ths_from_ram(
+        datas,
+        chair=chair,
+        plaintext=plaintext,
+        ciphertext=ciphertext
+    )
+    out.add_trace_header_set(ths)
+
+    datas = np.random.randint(0, 256, size=(nb_trace, nb_points), dtype=np.uint8)
+    plaintext_2 = np.random.randint(0, 256, (nb_trace, 16), dtype='uint8')
+    ciphertext = np.random.randint(0, 256, (nb_trace, 16), dtype='uint8')
+
+    ths = estraces.formats.read_ths_from_ram(
+        datas,
+        plaintext_2=plaintext_2,
+        ciphertext=ciphertext
+    )
+    with pytest.raises(estraces.ETSWriterException):
+        out.add_trace(ths[0])
+
+
+def test_ets_writer_add_trace_header_set(ets_filenames):
+
+    out = ETSWriter(filename)
+    datas = np.random.randint(0, 256, size=(nb_trace, nb_points), dtype=np.uint8)
+    plaintext = np.random.randint(0, 256, (nb_trace, 16), dtype='uint8')
+    chair = np.array(['abcd' for i in range(nb_trace)])
+    ciphertext = np.random.randint(0, 256, (nb_trace, 16), dtype='uint8')
+
+    ths = estraces.formats.read_ths_from_ram(
+        datas,
+        chair=chair,
+        plaintext=plaintext,
+        ciphertext=ciphertext
+    )
+    out.add_trace_header_set(ths)
+
+    out_ths = out.get_reader()
+    assert np.array_equal(out_ths.plaintext, plaintext)
+    assert np.array_equal(out_ths.ciphertext, ciphertext)
+    assert out_ths.chair.tolist() == chair.tolist()
+    assert np.array_equal(out_ths.samples.array, datas)
+
+
+def test_ets_writer_add_ths_raises_exception_if_ths_has_improper_types(ets_filenames):
+    out = ETSWriter(filename)
+    with pytest.raises(TypeError):
+        out.add_trace_header_set({'not': 'a ths'})
+
+
+def test_ets_writer_add_ths_raises_exception_if_metadata_are_inconsistent(ets_filenames):
+    out = ETSWriter(filename)
+    datas = np.random.randint(0, 256, size=(nb_trace, nb_points), dtype=np.uint8)
+    plaintext = np.random.randint(0, 256, (nb_trace, 16), dtype='uint8')
+    chair = np.array(['abcd' for i in range(nb_trace)])
+    ciphertext = np.random.randint(0, 256, (nb_trace, 16), dtype='uint8')
+
+    ths = estraces.formats.read_ths_from_ram(
+        datas,
+        chair=chair,
+        plaintext=plaintext,
+        ciphertext=ciphertext
+    )
+    out.add_trace_header_set(ths)
+
+    datas = np.random.randint(0, 256, size=(nb_trace, nb_points), dtype=np.uint8)
+    plaintext_2 = np.random.randint(0, 256, (nb_trace, 16), dtype='uint8')
+    ciphertext = np.random.randint(0, 256, (nb_trace, 16), dtype='uint8')
+
+    ths = estraces.formats.read_ths_from_ram(
+        datas,
+        plaintext_2=plaintext_2,
+        ciphertext=ciphertext
+    )
+    with pytest.raises(estraces.ETSWriterException):
+        out.add_trace_header_set(ths)
+
+
+def test_write_trace_with_new_metadata(ets_filenames):
+    datas = np.random.randint(0, 256, size=(nb_trace, nb_points), dtype=np.uint8)
+    plaintext = np.random.randint(0, 256, (nb_trace, 16), dtype='uint8')
+    ciphertext = np.random.randint(0, 256, (nb_trace, 16), dtype='uint8')
+
+    ths = estraces.formats.read_ths_from_ram(
+        datas,
+        plaintext=plaintext,
+        ciphertext=ciphertext
+    )
+
+    for trace in ths:
+        trace.new_meta = 'oups'
+        out = ETSWriter(filename)
+
+        out.write_trace_object_and_points(trace, trace.samples[:])
+    out.close()
+
+    ths_2 = estraces.read_ths_from_ets_file(filename)
+
+    assert ths_2[0].new_meta == 'oups'
+
+
+def test_write_samples(ets_filenames):
+    out = ETSWriter(filename, overwrite=True)
+
+    datas = np.random.randint(100, size=(nb_trace, nb_points), dtype=np.uint8)
+    plaintext = np.random.randint(256, size=(nb_trace, 16), dtype=np.uint8)
+    for index, data in enumerate(datas):
+        out.write_samples(data, index=index)
+        out.write_metadata('plaintext', plaintext[index], index=index)
+
+    ths = out.get_reader()
+    for i, t in enumerate(ths):
+        assert np.array_equal(t.samples[:], datas[i])
+        assert np.array_equal(t.plaintext, plaintext[i])

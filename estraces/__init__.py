@@ -67,6 +67,27 @@ ETS reader format:  `read_ths_from_ets_file`
 
 .. autofunction:: estraces.read_ths_from_ets_file
 
+TRS reader format:  `read_ths_from_trs_file`
+--------------------------------------------
+
+.. autofunction:: estraces.read_ths_from_trs_file
+
+Get a trace header set from numpy arrays
+========================================
+
+The `read_ths_from_ram` function allows to build a `TraceHeaderSet` from any arrays, in memory.
+
+RAM reader format: `read_ths_from_ram` function
+-----------------------------------------------
+
+.. autofunction:: estraces.read_ths_from_ram
+
+Writing an ETS file
+===================
+
+The class `ETSWriter` provides API to create Eshard Trace Set file.
+
+.. autoclass:: estraces.ETSWriter
 
 Implementing a new format reader
 ================================
@@ -103,8 +124,10 @@ from .formats import (
     read_ths_from_bin_filenames_pattern,
     read_ths_from_ets_file,
     read_ths_from_trs_file,
+    read_ths_from_ram,
     bin_extractor
 )
+from .formats.ets_writer import ETSWriter, ETSWriterException
 from .formats.bin_format import PaddingMode
 import warnings
 
@@ -118,6 +141,9 @@ __all__ = [
     "read_ths_from_trs_file",
     "bin_extractor",
     "read_ths_from_ets_file",
+    "read_ths_from_ram",
+    "ETSWriter",
+    "ETSWriterException",
     "AbstractReader",
     "build_trace_header_set",
     "PaddingMode"
