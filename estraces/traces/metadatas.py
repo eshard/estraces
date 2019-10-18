@@ -29,6 +29,9 @@ class Metadatas(collections.abc.Mapping):
             self._cache[key] = self._reader.fetch_metadatas(key=key, trace_id=self._trace_id)
         return self._cache[key]
 
+    def is_trace(self):
+        return self._trace_id is not None
+
     def __len__(self):
         return len(self._keys)
 

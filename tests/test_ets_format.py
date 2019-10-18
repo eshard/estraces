@@ -206,3 +206,24 @@ def test_split_preserves_length_consistency_of_sub_ths(ets1):
     for _, p in enumerate(parts):
         assert len(p) in (100, 56)
         assert len(p) == p.samples[:].shape[0]
+
+
+@pytest.fixture
+def ets_with_name():
+    data = np.random.randint(0, 255, (1000, 2000), dtype='uint8')
+    name = np.array(['a great name' for name in range(1000)])
+    _id = np.array([i for i in range(1000)], dtype='uint')
+    ths = estraces.read_ths_from_ram(data, name=name, id=_id)
+    out = estraces.ETSWriter('ets_with_name.ets')
+    out.add_trace_header_set(ths)
+    yield out.get_reader()
+    os.remove('ets_with_name.ets')
+
+
+def test_ets_with_name_and_id_metadata(ets_with_name):
+    assert ets_with_name.name[0] == 'a great name'
+    assert len(ets_with_name.name) == 1000
+    assert ets_with_name[0].name == 'a great name'
+    assert len(ets_with_name.id) == 1000
+    assert ets_with_name.id[0] == 0
+    assert ets_with_name[100].id == 100
