@@ -19,16 +19,19 @@ class ETSWriterException(Exception):
 class ETSWriter:
     """Provides API to create an ETS (Eshard Trace Set) file."""
 
-    def __init__(self, filename, overwrite=False):
+    def __init__(self, filename, overwrite=False, compressed=False):
         """Create an ETS file writer instance.
 
         Args:
             filename (str): path and filename to write the ETS.
             overwrite (bool, default=False): if True, any existing file with filename will be erased before writing datas.
+            compressed (bool, default=False): if True, samples and metadata will be compressed,
+                resulting in a smaller file but with a decrease in reading speed from this file.
 
         """
         self._overwrite = overwrite
         self._filename = filename
+        self._compressed = compressed
         self._h5_file = None
         self._initialized_datasets = None
         if _os.path.isfile(self._filename):
@@ -49,6 +52,16 @@ class ETSWriter:
             f.close()
         except OSError as e:
             logger.error(f'Exception raised during init of h5f file: {e}.')
+
+    @property
+    def _dataset_kwargs(self):
+        if self._compressed:
+            return {
+                'compression': 'gzip',
+                'compression_opts': 9
+            }
+        else:
+            return {}
 
     def _init_file(self):
         self._close_all()
@@ -225,7 +238,7 @@ class ETSWriter:
 
     def _init_traces(self, data):
         shape, maxshape, dtype = self._compute_shapes_and_htype(data)
-        self._h5_file.create_dataset(TRACES_DATASET_KEY, shape, maxshape=maxshape, dtype=dtype)
+        self._h5_file.create_dataset(TRACES_DATASET_KEY, shape, maxshape=maxshape, dtype=dtype, **self._dataset_kwargs)
         self._is_init_traces = True
 
     def _init_metadata(self, metadata_key, metadata):
@@ -236,7 +249,7 @@ class ETSWriter:
             shape = (shape[0], )
             maxshape = (None, )
 
-        self._h5_file[METADATA_GROUP_KEY].create_dataset(metadata_key, shape, maxshape=maxshape, dtype=h5type)
+        self._h5_file[METADATA_GROUP_KEY].create_dataset(metadata_key, shape, maxshape=maxshape, dtype=h5type, **self._dataset_kwargs)
         self._initialized_datasets.append(metadata_key)
 
     def _add_to_dataset(self, data_set, data, index):

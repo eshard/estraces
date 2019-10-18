@@ -17,6 +17,7 @@ filename_3 = 'ETS3.ets'
 def ets_filenames():
     try:
         os.remove(filename)
+        os.remove(filename + '.zip')
         os.remove(filename_1)
         os.remove(filename_2)
         os.remove(filename_3)
@@ -25,6 +26,7 @@ def ets_filenames():
     yield [filename, filename_1, filename_2, filename_3]
     try:
         os.remove(filename)
+        os.remove(filename + '.zip')
         os.remove(filename_1)
         os.remove(filename_2)
         os.remove(filename_3)
@@ -72,7 +74,6 @@ def test_ets_writer_works_whatever_is_the_index_order(ets_filenames):
     d1 = read_ths_from_ets_file(filename_1).samples[:]
     d2 = read_ths_from_ets_file(filename_2).samples[:]
     d3 = read_ths_from_ets_file(filename_3).samples[:]
-    print(d1.shape, d2.shape, d3.shape)
     assert np.array_equal(d1[9], d3[9])
     assert np.array_equal(d1[2], d3[2])
     assert np.array_equal(d1[1], d3[1])
@@ -97,8 +98,6 @@ def test_write_ndarray(ets_filenames):
 
     ths = out.get_reader()
     for i, t in enumerate(ths):
-        print(i, t.samples.array, datas[i])
-        print(i, t.plaintext, plaintext[i])
         assert np.array_equal(t.samples[:], datas[i])
         assert np.array_equal(t.plaintext, plaintext[i])
 
@@ -477,3 +476,23 @@ def test_write_samples(ets_filenames):
     for i, t in enumerate(ths):
         assert np.array_equal(t.samples[:], datas[i])
         assert np.array_equal(t.plaintext, plaintext[i])
+
+
+def test_write_with_compressed_mode(ets_filenames):
+    out_1 = ETSWriter(filename)
+    out_2 = ETSWriter(filename + '.zip', compressed=True)
+
+    datas = np.random.randint(-55000, 550000, size=(nb_trace, nb_points), dtype='int32')
+    plaintext = np.random.randint(256, size=(nb_trace, 16), dtype=np.uint8)
+    ths = estraces.read_ths_from_ram(datas, plaintext=plaintext)
+    out_1.add_trace_header_set(ths)
+    out_2.add_trace_header_set(ths)
+
+    ths_1 = out_1.get_reader()
+    ths_2 = out_2.get_reader()
+
+    assert os.path.getsize(filename) > os.path.getsize(filename + '.zip')
+    assert np.array_equal(ths_1.samples[:], datas)
+    assert np.array_equal(ths_2.samples[:], datas)
+    assert np.array_equal(ths_1.plaintext, plaintext)
+    assert np.array_equal(ths_1.plaintext, plaintext)
