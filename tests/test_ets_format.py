@@ -138,8 +138,6 @@ def test_fetch_samples_execution_time(ets1):
     # Initial ratio before issue #26 ~175
     t_ref = timeit.timeit('ref_func(ets2)', number=100, globals=globals())
     t = timeit.timeit('bench_func(ets3)', number=100, globals=globals())
-    print(t_ref, t, abs(t - t_ref) / t_ref)
-
     assert 200 > abs(t - t_ref) / t_ref
 
 
@@ -198,9 +196,6 @@ def test_ths_slicing_memory_consumption(ets_filename):
         ths[:].samples[:]
 
     ref_footprint = max(memory_profiler.memory_usage(ref))
-
-    print(bgd_footprint, ref_footprint, trace_footprint, slice_footprint)
-
     assert abs(trace_footprint - bgd_footprint) / abs(ref_footprint - bgd_footprint) < 0.1, 'Memory consumption of trace selection is too high'
     assert abs(slice_footprint - bgd_footprint) / abs(ref_footprint - bgd_footprint) < 0.1, 'Memory consumption of ths slicing is too high'
     assert abs((trace_footprint - slice_footprint) / (slice_footprint)) < 0.01, 'Memory consumption of ths slicing and trace selection should be equivalent'

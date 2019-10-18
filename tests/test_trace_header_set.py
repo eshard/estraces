@@ -195,7 +195,6 @@ def test_succesive_ths_slicings_keeps_samples_metas_consistent(ths):
     sub_sub_sub_t_1 = sub_sub_t_1[0:1]
     assert len(sub_sub_sub_t_1) == 1
     assert sub_sub_sub_t_1.samples.tolist() == ths.samples[0:1].tolist()
-    print("**********", ths.plaintext[0:1].shape, sub_sub_sub_t_1.plaintext.shape)
     assert sub_sub_sub_t_1.plaintext.tolist() == ths.plaintext[0:1].tolist()
     assert sub_sub_sub_t_1.ciphertext.tolist() == ths.ciphertext[0:1].tolist()
 
