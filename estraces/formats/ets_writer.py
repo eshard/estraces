@@ -152,11 +152,11 @@ class ETSWriter:
         if not isinstance(metadata, _metadata.Metadatas):
             raise TypeError(f'metadata is not a Metadatas instance, not {type(metadata)}.')
         for key, val in metadata.items():
-            if val.ndim > 1:
+            if metadata.is_trace():
+                self.write_metadata(key, val)
+            else:
                 for v in val:
                     self.write_metadata(key, v)
-            else:
-                self.write_metadata(key, val)
 
     def write_trace_object_and_points(self, trace_object, points, index=None):
         """Write provided trace samples and metadata at specified index of the ETS.
