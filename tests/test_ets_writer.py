@@ -496,3 +496,20 @@ def test_write_with_compressed_mode(ets_filenames):
     assert np.array_equal(ths_2.samples[:], datas)
     assert np.array_equal(ths_1.plaintext, plaintext)
     assert np.array_equal(ths_1.plaintext, plaintext)
+
+
+def test_write_trace_with_scalar_metadata(ets_filenames):
+    datas = np.random.randint(0, 256, size=(nb_trace, nb_points), dtype=np.uint8)
+    scals = np.random.randint(0, 256, (nb_trace,), dtype='uint8')
+
+    ths = estraces.formats.read_ths_from_ram(
+        datas,
+        scals=scals
+    )
+
+    out = ETSWriter(filename)
+    out.add_trace_header_set(ths)
+
+    ths_2 = out.get_reader()
+
+    assert len(ths_2.scals) == nb_trace

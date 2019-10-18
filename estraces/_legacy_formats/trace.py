@@ -27,7 +27,7 @@ class TraceDeprecated:
     @property
     def filename(self):
         try:
-            return self._reader._filenames[self.id]
+            return self._reader._filenames[self._id]
         except Exception:
             return AttributeError('filename attribute does not exist.')
 

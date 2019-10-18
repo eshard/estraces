@@ -28,7 +28,7 @@ class TracesContainer(abc.Collection):
         return len(self._keys_list)
 
     def __contains__(self, trace):
-        return trace.id in self._keys_list
+        return trace._id in self._keys_list
 
     def __iter__(self):
         for trc in range(len(self)):
@@ -105,7 +105,12 @@ class TraceHeaderSet:
                     c=self.__class__.__name__, f=build_trace_header_set.__name__
                 )
             )
-        self.name = name
+        try:
+            self.name = name
+        except AttributeError:
+            # Name is already a metadata of the ths, so we don't bother with it.
+            pass
+
         self._reader = reader
         self._trace_klass = _metaclass.ClassWithMetadatas.__new__(
             cls=_metaclass.ClassWithMetadatas,
@@ -121,7 +126,7 @@ class TraceHeaderSet:
     def __str__(self):
         r = f'Trace Header Set:\n{"Name":.<17}: {self.name}\n{"Reader":.<17}: {self._reader}\n'
         for k in self.metadatas.keys():
-            r += f'{k:.<17}: {self.traces[0].metadatas.get(k).dtype}\n'
+            r += f'{k:.<17}: {self.metadatas.get(k).dtype}\n'
         return r
 
     def __repr__(self):
