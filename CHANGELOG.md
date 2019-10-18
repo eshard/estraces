@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.4.1 (2019-10-18)
+
+* fix: Trace header set and trace can support a name metadata ([f36ed12](https://gitlab.com/eshard/estraces/commit/f36ed12))
+
 ## 1.4.0  (2019-10-18)
 
 * feat: ETSWriter new APIs and improvements ([c35ade2](https://gitlab.com/eshard/estraces/commit/c35ade2))
