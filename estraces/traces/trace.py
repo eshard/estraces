@@ -7,8 +7,6 @@ class Trace:
     """Provides a consistent API to manipulate a trace samples data and metadatas.
 
     Attributes:
-        id (int): identifier of the trace
-        name (str): name of the trace
         samples (:class:`Samples`): 1 dimension samples data
         metadatas (:class:`Metadatas`): trace metadatas
 
@@ -36,11 +34,20 @@ class Trace:
     def __init__(self, trace_id, reader):
         if trace_id is None:
             raise AttributeError("trace_id can't be None.")
-        self.id = trace_id
+        self._id = trace_id
         self._reader = reader
         self._samples = None
         self._metadatas = None
-        self.name = f'Trace n°{self.id}'
+        try:
+            self.name = f'Trace n°{self._id}'
+        except AttributeError:
+            # Name is already a metadata of the ths, so we don't bother with it.
+            pass
+        try:
+            self.id = self._id
+        except AttributeError:
+            # Name is already a metadata of the ths, so we don't bother with it.
+            pass
 
     def __len__(self):
         return len(self.samples)
@@ -48,21 +55,21 @@ class Trace:
     @property
     def samples(self):
         if self._samples is None:
-            self._samples = samples.Samples(reader=self._reader, trace_id=self.id)
+            self._samples = samples.Samples(reader=self._reader, trace_id=self._id)
         return self._samples
 
     @property
     def metadatas(self):
         if not self._metadatas:
-            self._metadatas = metadatas.Metadatas(reader=self._reader, trace_id=self.id)
+            self._metadatas = metadatas.Metadatas(reader=self._reader, trace_id=self._id)
         return self._metadatas
 
     def __repr__(self):
-        return f'{self.__class__.__name__}(trace_id={self.id}, reader={self._reader})'
+        return f'{self.__class__.__name__}(trace_id={self._id}, reader={self._reader})'
 
     def __str__(self):
         r = 'Trace\n'
-        r += f'{"Id":.<17}: {self.id}\n'
+        r += f'{"Id":.<17}: {self._id}\n'
         r += f'{"Samples size":.<17}: {len(self)}\n'
         for k in self.metadatas.keys():
             r += f'{k:.<17}: {self.metadatas.get(k)}\n'
