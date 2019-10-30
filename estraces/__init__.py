@@ -127,7 +127,7 @@ from .formats import (
     read_ths_from_ram,
     bin_extractor
 )
-from .formats.ets_writer import ETSWriter, ETSWriterException
+from .formats.ets_writer import ETSWriter, ETSWriterException, compress_ets
 from .formats.bin_format import PaddingMode
 import warnings
 
@@ -146,7 +146,8 @@ __all__ = [
     "ETSWriterException",
     "AbstractReader",
     "build_trace_header_set",
-    "PaddingMode"
+    "PaddingMode",
+    "compress_ets"
 ]
 
 # Set default logging handler to avoid "No handler found" warnings.

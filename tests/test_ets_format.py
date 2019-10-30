@@ -216,8 +216,10 @@ def ets_with_name():
     ths = estraces.read_ths_from_ram(data, name=name, id=_id)
     out = estraces.ETSWriter('ets_with_name.ets')
     out.add_trace_header_set(ths)
-    yield out.get_reader()
-    os.remove('ets_with_name.ets')
+    try:
+        yield out.get_reader()
+    finally:
+        os.remove('ets_with_name.ets')
 
 
 def test_ets_with_name_and_id_metadata(ets_with_name):
