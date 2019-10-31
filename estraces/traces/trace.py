@@ -65,11 +65,12 @@ class Trace:
         return self._metadatas
 
     def __repr__(self):
-        return f'{self.__class__.__name__}(trace_id={self._id}, reader={self._reader})'
+        return str(self)
 
     def __str__(self):
-        r = 'Trace\n'
-        r += f'{"Id":.<17}: {self._id}\n'
+        r = 'Trace:\n'
+        r += f'{"Reader instance":.<17}: {self._reader}\n'
+        r += f'{"Index in set":.<17}: {self._id}\n'
         r += f'{"Samples size":.<17}: {len(self)}\n'
         for k in self.metadatas.keys():
             r += f'{k:.<17}: {self.metadatas.get(k)}\n'
