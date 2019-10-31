@@ -130,9 +130,7 @@ class TraceHeaderSet:
         return r
 
     def __repr__(self):
-        return (
-            f'{build_trace_header_set.__name__}(reader={self._reader}, name="{self.name}")'
-        )
+        return str(self)
 
     def __len__(self):
         return len(self.traces)

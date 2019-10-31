@@ -270,3 +270,8 @@ def test_split_raises_error_with_improper_type(ths):
         split["jj"]
         split[-15]
         split[1:2]
+
+
+def test_str_and_repr(ths):
+    assert repr(ths) == str(ths)
+    assert repr(ths[0]) == str(ths[0])
