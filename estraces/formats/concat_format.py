@@ -157,7 +157,10 @@ class ConcatFormatReader(AbstractReader):
         if isinstance(traces, int):
             traces = slice(traces, traces + 1)
         if isinstance(frame, int):
-            frame = slice(frame, frame + 1)
+            if frame < 0:
+                frame = slice(frame, None)
+            else:
+                frame = slice(frame, frame + 1)
 
         original_traces_indices_per_set, indices_per_set, length = self._convert_traces_indices_to_list_of_raw_traces_indices_per_set(traces)
         rez = np.empty(shape=(length, self._trace_size), dtype=self._trace_dtype)

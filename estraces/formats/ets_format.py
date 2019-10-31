@@ -102,8 +102,12 @@ class ETSFormatReader(AbstractReader):
         if isinstance(frame, (Ellipsis.__class__, slice)):
             return self._slice_traces(keys_tuple=(traces, frame))
         else:
-            start = np.min(frame)
-            stop = np.max(frame) + 1
+            if len(frame) == 1 and frame[0] < 0:
+                start = frame[0]
+                stop = None
+            else:
+                start = np.min(frame)
+                stop = np.max(frame) + 1
             frame = frame - start
             return self._slice_traces(keys_tuple=(traces, slice(start, stop)), final_frame=frame)
             # TODO: how to write a test case for the memory overhead optimization strategy below ?
