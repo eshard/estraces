@@ -17,8 +17,8 @@ project = 'estraces'
 copyright = '2019, eshard'
 author = 'eshard team'
 
-version = '1.4'
-release = '1.4.1'
+version = '1.5'
+release = '1.5.0'
 
 
 # -- General configuration ---------------------------------------------------
