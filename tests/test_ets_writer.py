@@ -5,9 +5,10 @@ from estraces import ETSWriter
 from estraces import read_ths_from_ets_file
 import pytest
 
-nb_trace = 10
-nb_points = 10
+nb_trace = 1000
+nb_points = 500
 filename = 'ETS-test.ets'
+compressed = 'ETS.etsz'
 filename_1 = 'ETS1.ets'
 filename_2 = 'ETS2.ets'
 filename_3 = 'ETS3.ets'
@@ -17,16 +18,16 @@ filename_3 = 'ETS3.ets'
 def ets_filenames():
     try:
         os.remove(filename)
-        os.remove(filename + '.zip')
+        os.remove(compressed)
         os.remove(filename_1)
         os.remove(filename_2)
         os.remove(filename_3)
     except FileNotFoundError:
         pass
-    yield [filename, filename_1, filename_2, filename_3]
+    yield [filename, filename_1, filename_2, filename_3, compressed]
     try:
         os.remove(filename)
-        os.remove(filename + '.zip')
+        os.remove(compressed)
         os.remove(filename_1)
         os.remove(filename_2)
         os.remove(filename_3)
@@ -51,7 +52,7 @@ def test_ets_writer_raises_exception_if_trying_to_replace_existing_data_wo_overw
 
 
 def test_ets_writer_works_whatever_is_the_index_order(ets_filenames):
-    base_trace = np.random.randint(0, 256, (nb_points, nb_trace), dtype='uint8')
+    base_trace = np.random.randint(0, 256, (nb_trace, nb_points), dtype='uint8')
 
     ets1 = ETSWriter(filename_1, overwrite=True)
     indexes = np.arange(nb_trace)
@@ -66,7 +67,7 @@ def test_ets_writer_works_whatever_is_the_index_order(ets_filenames):
     ets2.close()
 
     ets3 = ETSWriter(filename_3, overwrite=True)
-    indexes_3 = [9, 2, 1]
+    indexes_3 = [nb_trace - 1, 2, 1]
     for ind in indexes_3:
         ets3.write_samples(base_trace[ind], index=ind)
     ets3.close()
@@ -74,7 +75,7 @@ def test_ets_writer_works_whatever_is_the_index_order(ets_filenames):
     d1 = read_ths_from_ets_file(filename_1).samples[:]
     d2 = read_ths_from_ets_file(filename_2).samples[:]
     d3 = read_ths_from_ets_file(filename_3).samples[:]
-    assert np.array_equal(d1[9], d3[9])
+    assert np.array_equal(d1[nb_trace - 1], d3[nb_trace - 1])
     assert np.array_equal(d1[2], d3[2])
     assert np.array_equal(d1[1], d3[1])
 
@@ -478,26 +479,6 @@ def test_write_samples(ets_filenames):
         assert np.array_equal(t.plaintext, plaintext[i])
 
 
-def test_write_with_compressed_mode(ets_filenames):
-    out_1 = ETSWriter(filename)
-    out_2 = ETSWriter(filename + '.zip', compressed=True)
-
-    datas = np.random.randint(-55000, 550000, size=(nb_trace, nb_points), dtype='int32')
-    plaintext = np.random.randint(256, size=(nb_trace, 16), dtype=np.uint8)
-    ths = estraces.read_ths_from_ram(datas, plaintext=plaintext)
-    out_1.add_trace_header_set(ths)
-    out_2.add_trace_header_set(ths)
-
-    ths_1 = out_1.get_reader()
-    ths_2 = out_2.get_reader()
-
-    assert os.path.getsize(filename) > os.path.getsize(filename + '.zip')
-    assert np.array_equal(ths_1.samples[:], datas)
-    assert np.array_equal(ths_2.samples[:], datas)
-    assert np.array_equal(ths_1.plaintext, plaintext)
-    assert np.array_equal(ths_1.plaintext, plaintext)
-
-
 def test_write_trace_with_scalar_metadata(ets_filenames):
     datas = np.random.randint(0, 256, size=(nb_trace, nb_points), dtype=np.uint8)
     scals = np.random.randint(0, 256, (nb_trace,), dtype='uint8')
@@ -513,3 +494,56 @@ def test_write_trace_with_scalar_metadata(ets_filenames):
     ths_2 = out.get_reader()
 
     assert len(ths_2.scals) == nb_trace
+
+
+def test_compress_ets_raises_exception_if_filename_not_provided(ets_filenames):
+    with pytest.raises(TypeError):
+        estraces.compress_ets(out_filename='foo')
+    with pytest.raises(TypeError):
+        estraces.compress_ets(filename='foo')
+
+
+def test_compress_ets_raises_exception_on_bad_types(ets_filenames):
+    with pytest.raises(TypeError):
+        estraces.compress_ets(filename=1233, out_filename='foo')
+    with pytest.raises(TypeError):
+        estraces.compress_ets(filename='foo', out_filename=123)
+
+
+def test_compress_ets_raises_exception_if_original_file_doesnt_exist(ets_filenames):
+    with pytest.raises(AttributeError):
+        estraces.compress_ets(filename='foo', out_filename='bar')
+
+
+def test_compress_ets_raises_exception_if_original_outfile_exist(ets_filenames):
+    ets = estraces.ETSWriter(filename)
+    ets.add_trace_header_set(
+        estraces.read_ths_from_ram(
+            np.random.randint(0, 255, (100, 10), dtype='uint8')
+        )
+    )
+    ets.close()
+    with pytest.raises(ValueError):
+        estraces.compress_ets(filename='foo', out_filename=filename)
+    with pytest.raises(ValueError):
+        estraces.compress_ets(filename=filename, out_filename=filename)
+
+
+def test_compress_ets(ets_filenames):
+    ets = estraces.ETSWriter(filename, overwrite=True)
+    ths = estraces.read_ths_from_ram(
+        np.random.randint(-55000, 55000, (nb_trace, nb_points), dtype='int32'),
+        plaintext=np.random.randint(0, 256, (nb_trace, 16), dtype='uint8'),
+        ciphertext=np.random.randint(0, 256, (nb_trace, 16), dtype='uint8'),
+        chairs=np.array([f'chair{i}' for i in range(nb_trace)])
+    )
+    ets.add_trace_header_set(ths)
+    ths = ets.get_reader()
+    estraces.compress_ets(filename=filename, out_filename=compressed)
+    ths_comp = estraces.read_ths_from_ets_file(compressed)
+
+    assert np.array_equal(ths.samples[:], ths_comp.samples[:])
+    assert np.array_equal(ths.plaintext, ths_comp.plaintext)
+    assert np.array_equal(ths.ciphertext, ths_comp.ciphertext)
+    assert np.array_equal(ths.chairs, ths_comp.chairs)
+    assert os.path.getsize(filename) > 1.1 * os.path.getsize(compressed)
