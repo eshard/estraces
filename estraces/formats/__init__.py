@@ -2,11 +2,13 @@ from .bin_format import read_ths_from_bin_filenames_list, read_ths_from_bin_file
 from .ets_format import read_ths_from_ets_file
 from .trs_format import read_ths_from_trs_file
 from .ram_format import read_ths_from_ram
+from .concat_format import read_ths_from_multiple_ths
 
 __all__ = [
     "read_ths_from_bin_filenames_list",
     "read_ths_from_bin_filenames_pattern",
     "read_ths_from_ets_file",
     "read_ths_from_trs_file",
-    "read_ths_from_ram"
+    "read_ths_from_ram",
+    "read_ths_from_multiple_ths"
 ]
