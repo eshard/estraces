@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.5.0 (2019-10-31)
+
+* feat: change compression API to a function converter - ets writer ([6babe4d](https://gitlab.com/eshard/estraces/commit/6babe4d))
+
 ## 1.4.1 (2019-10-18)
 
 * fix: Trace header set and trace can support a name metadata ([f36ed12](https://gitlab.com/eshard/estraces/commit/f36ed12))
