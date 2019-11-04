@@ -103,10 +103,14 @@ class Samples:
 
     def _get_traces_and_frame_from_key(self, key):
         if self.ndim == 1:
+            if isinstance(key, _np.ndarray) and key.dtype == 'bool':
+                key = _np.argwhere(key).squeeze().tolist()
             return [self._trace_id], key
         if not isinstance(key, tuple):
             return self._convert_traces_key_to_iterable(key), ...
         else:
+            if isinstance(key[1], _np.ndarray) and key[1].dtype == 'bool':
+                key = (key[0], _np.argwhere(key[1]).squeeze())
             return self._convert_traces_key_to_iterable(key[0]), key[1]
 
     def _convert_traces_key_to_iterable(self, traces_key):
@@ -119,6 +123,8 @@ class Samples:
                 stop,
                 traces_key.step if traces_key.step else 1,
             )
+        elif isinstance(traces_key, _np.ndarray) and traces_key.dtype == 'bool':
+            return _np.argwhere(traces_key).squeeze().tolist()
         return traces_key
 
     def _check_traces_dimension(self, traces_key):

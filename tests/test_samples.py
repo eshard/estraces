@@ -254,3 +254,19 @@ def test_samples_instantiate_array_interface_in_last_resort(s1d, s2d):
     assert s2d.__array_interface__ is None
     s2d.array
     assert s2d.__array_interface__ is not None
+
+
+def test_samples_support_boolean_indexing(samples):
+    boolean = np.array([True] + [False] * (len(samples) - 2) + [True], dtype=bool)
+    assert len(samples[boolean]) == 2
+    assert np.array_equal(samples[0], samples[boolean][0])
+    assert np.array_equal(samples[-1], samples[boolean][1])
+
+
+def test_samples_support_boolean_indexing_2d(s2d):
+    boolean = np.array([True] + [False] * (s2d.shape[1] - 2) + [True], dtype=bool)
+    print(s2d.shape)
+    print(s2d[:, boolean].shape)
+    assert s2d[:, boolean].shape[1] == 2
+    assert np.array_equal(s2d[:, 0], s2d[:, boolean][:, 0])
+    assert np.array_equal(s2d[:, -1], s2d[:, boolean][:, 1])

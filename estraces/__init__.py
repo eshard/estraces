@@ -82,6 +82,14 @@ RAM reader format: `read_ths_from_ram` function
 
 .. autofunction:: estraces.read_ths_from_ram
 
+Get a trace header set concateneted from multiple trace header set instances
+============================================================================
+
+The `read_ths_from_multiple_ths` function allows to build a `TraceHeaderSet` from several others `TraceHeaderSet` instance,
+as a concatenation.
+
+.. autofunction:: estraces.read_ths_from_multiple_ths
+
 Writing an ETS file
 ===================
 
@@ -125,6 +133,7 @@ from .formats import (
     read_ths_from_ets_file,
     read_ths_from_trs_file,
     read_ths_from_ram,
+    read_ths_from_multiple_ths,
     bin_extractor
 )
 from .formats.ets_writer import ETSWriter, ETSWriterException, compress_ets
@@ -147,7 +156,8 @@ __all__ = [
     "AbstractReader",
     "build_trace_header_set",
     "PaddingMode",
-    "compress_ets"
+    "compress_ets",
+    "read_ths_from_multiple_ths"
 ]
 
 # Set default logging handler to avoid "No handler found" warnings.
