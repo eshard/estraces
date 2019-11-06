@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from . import metadatas
 from . import samples
+from . import headers
 
 
 class Trace:
@@ -9,7 +10,7 @@ class Trace:
     Attributes:
         samples (:class:`Samples`): 1 dimension samples data
         metadatas (:class:`Metadatas`): trace metadatas
-
+        headers (:class:`Headers`): headers value of the trace set
     Note:
         All metadatas are available through the `metadatas` attributes and through a corresponding named property.
 
@@ -29,6 +30,11 @@ class Trace:
 
             trace.plaintext # is equivalent to trace.metadatas['plaintext']
 
+        Headers are metadata value which are the same for all the traces of one given trace set.
+        It is provided at the trace level through a dict-like object:
+
+            trace.headers['key'] # equivalent to ths.headers['key'] where ths is the trace header set of the trace.
+
     """
 
     def __init__(self, trace_id, reader):
@@ -38,6 +44,7 @@ class Trace:
         self._reader = reader
         self._samples = None
         self._metadatas = None
+        self._headers = None
         try:
             self.name = f'Trace n°{self._id}'
         except AttributeError:
@@ -63,6 +70,12 @@ class Trace:
         if not self._metadatas:
             self._metadatas = metadatas.Metadatas(reader=self._reader, trace_id=self._id)
         return self._metadatas
+
+    @property
+    def headers(self):
+        if not self._headers:
+            self._headers = headers.Headers(reader=self._reader)
+        return self._headers
 
     def __repr__(self):
         return str(self)

@@ -2,7 +2,7 @@ from .context import estraces  # noqa
 import pytest
 import numpy as np
 from .format_test_implementation import Format
-from .conftest import DATAS, PLAINS, CIPHERS
+from .conftest import DATAS, PLAINS, CIPHERS, KEY, FOO, TIME
 
 
 @pytest.fixture
@@ -166,6 +166,8 @@ def test_succesive_ths_slicings_keeps_samples_metas_consistent(ths):
     assert sub_t_2.plaintext.tolist() == ths.plaintext[4:8].tolist()
     assert sub_t_1.ciphertext.tolist() == ths.ciphertext[0:4].tolist()
     assert sub_t_2.ciphertext.tolist() == ths.ciphertext[4:8].tolist()
+    assert sub_t_1.headers == sub_t_2.headers
+    assert ths.headers == sub_t_1.headers
 
     sub_sub_t_1 = sub_t_1[0:2]
     sub_sub_t_2 = sub_t_2[0:2]
@@ -179,24 +181,29 @@ def test_succesive_ths_slicings_keeps_samples_metas_consistent(ths):
     assert sub_sub_t_2.plaintext.tolist() == ths.plaintext[4:6].tolist()
     assert sub_sub_t_1.ciphertext.tolist() == ths.ciphertext[0:2].tolist()
     assert sub_sub_t_2.ciphertext.tolist() == ths.ciphertext[4:6].tolist()
+    assert sub_sub_t_1.headers == sub_sub_t_2.headers
+    assert ths.headers == sub_sub_t_1.headers
 
     sub_sub_t_12 = sub_t_1[2:4]
     assert len(sub_sub_t_12) == 2
     assert sub_sub_t_12.samples.tolist() == ths.samples[2:4].tolist()
     assert sub_sub_t_12.plaintext.tolist() == ths.plaintext[2:4].tolist()
     assert sub_sub_t_12.ciphertext.tolist() == ths.ciphertext[2:4].tolist()
+    assert sub_sub_t_12.headers == ths.headers
 
     sub_sub_t_22 = sub_t_2[2:4]
     assert len(sub_sub_t_22) == 2
     assert sub_sub_t_22.samples.tolist() == ths.samples[6:8].tolist()
     assert sub_sub_t_22.plaintext.tolist() == ths.plaintext[6:8].tolist()
     assert sub_sub_t_22.ciphertext.tolist() == ths.ciphertext[6:8].tolist()
+    assert sub_sub_t_22.headers == ths.headers
 
     sub_sub_sub_t_1 = sub_sub_t_1[0:1]
     assert len(sub_sub_sub_t_1) == 1
     assert sub_sub_sub_t_1.samples.tolist() == ths.samples[0:1].tolist()
     assert sub_sub_sub_t_1.plaintext.tolist() == ths.plaintext[0:1].tolist()
     assert sub_sub_sub_t_1.ciphertext.tolist() == ths.ciphertext[0:1].tolist()
+    assert sub_sub_sub_t_1.headers == ths.headers
 
 
 def test_ths_slicing_with_list_returns_subths(ths):
@@ -275,3 +282,13 @@ def test_split_raises_error_with_improper_type(ths):
 def test_str_and_repr(ths):
     assert repr(ths) == str(ths)
     assert repr(ths[0]) == str(ths[0])
+
+
+def test_attribute_headers_returns_headers_type(ths):
+    assert isinstance(ths.headers, estraces.traces.headers.Headers)
+
+
+def test_attribute_headers(ths):
+    assert np.array_equal(ths.headers['key'], KEY)
+    assert ths.headers['time'] == TIME
+    assert ths.headers['foo'] == FOO

@@ -46,7 +46,7 @@ class PaddingMode(_enum.Enum):
     TRUNCATE = 2
 
 
-def read_ths_from_bin_filenames_pattern(filename_pattern, metadatas_parsers, dtype, offset=0, padding_mode=PaddingMode.NONE):
+def read_ths_from_bin_filenames_pattern(filename_pattern, metadatas_parsers, dtype, headers={}, offset=0, padding_mode=PaddingMode.NONE):
     """Build and returns a :class:`TraceHeaderSet` instance from binaries files following a filename pattern.
 
     Each file must contains samples data for one trace.
@@ -56,6 +56,7 @@ def read_ths_from_bin_filenames_pattern(filename_pattern, metadatas_parsers, dty
         metadatas_parsers (dict): dict with a key for each metadata of the trace set, with value a :class:`bin_extractor.HeaderExtractor`,
             :class:`bin_extractor.PatternExtractor`, :class:`bin_extractor.FilePatternExtractor` or :class:`bin_extractor.DirectValue` instance.
         dtype (dtype): the Numpy samples data dtype
+        headers (dict, default={}): dictionnary containing headers values for this trace set.
         offset (int, default:0): use as an offset when reading samples in files.
         padding_mode (:class:`PaddingMode`, default: `PaddingMode.NONE`): choose how to handle different traces size in your trace list.
             Possible modes are NONE, PAD and TRUNCATE (see :class:`bin_format.PaddingMode`).
@@ -67,6 +68,7 @@ def read_ths_from_bin_filenames_pattern(filename_pattern, metadatas_parsers, dty
     files_list = get_sorted_filenames(pattern=filename_pattern)
     return read_ths_from_bin_filenames_list(
         filenames_list=files_list,
+        headers=headers,
         metadatas_parsers=metadatas_parsers,
         dtype=dtype,
         offset=offset,
@@ -74,7 +76,7 @@ def read_ths_from_bin_filenames_pattern(filename_pattern, metadatas_parsers, dty
     )
 
 
-def read_ths_from_bin_filenames_list(filenames_list, metadatas_parsers, dtype, offset=0, padding_mode=PaddingMode.NONE):
+def read_ths_from_bin_filenames_list(filenames_list, metadatas_parsers, dtype, headers={}, offset=0, padding_mode=PaddingMode.NONE):
     """Build and returns a :class:`TraceHeaderSet` instance from binaries files listed.
 
     Each file must contains samples data for one trace.
@@ -84,6 +86,7 @@ def read_ths_from_bin_filenames_list(filenames_list, metadatas_parsers, dtype, o
         metadatas_parsers (dict): dict with a key for each metadata of the trace set, with value a :class:`bin_extractor.HeaderExtractor`,
             :class:`bin_extractor.PatternExtractor`, :class:`bin_extractor.FilePatternExtractor` or :class:`bin_extractor.DirectValue` instance.
         dtype (dtype): the Numpy samples data dtype
+        headers (dict, default={}): dictionnary containing headers values for this trace set.
         offset (int, default: 0): use as an offset when reading samples in files.
         padding_mode (:class:`PaddingMode`, default: `PaddingMode.NONE`): choose how to handle different traces size in your trace list.
             Possible values are NONE, PAD and TRUNCATE (see :class:`bin_format.PaddingMode`).
@@ -95,6 +98,7 @@ def read_ths_from_bin_filenames_list(filenames_list, metadatas_parsers, dtype, o
     return build_trace_header_set(
         reader=BinFormat(
             filenames=filenames_list,
+            headers=headers,
             offset=offset,
             dtype=dtype,
             metadatas_parsers=metadatas_parsers,
@@ -123,7 +127,9 @@ class _FExtractor:
 
 class BinFormat(AbstractReader):
 
-    def __init__(self, filenames, dtype, metadatas_parsers, offset=0, padding_mode=PaddingMode.NONE, metadatas_indices_conversion_function=lambda i: i):
+    def __init__(
+        self, filenames, dtype, metadatas_parsers, headers={}, offset=0, padding_mode=PaddingMode.NONE, metadatas_indices_conversion_function=lambda i: i
+    ):
         if not isinstance(filenames, list):
             raise TypeError("filenames must be a list of filenames strings.")
 
@@ -133,6 +139,7 @@ class BinFormat(AbstractReader):
         self._dtype = _np.dtype(dtype)
         self._offset = offset
         self._set_padding_mode(padding_mode)
+        self._headers = {k: v for k, v in headers.items()}
         self._initialize_metadatas(metadatas_parsers)
 
     def _set_padding_mode(self, padding_mode):
@@ -175,6 +182,10 @@ class BinFormat(AbstractReader):
             else:
                 self._metadatas_parsers[k] = (extractor, _2)
 
+    @property
+    def headers_keys(self):
+        return self._headers.keys()
+
     def __len__(self):
         return len(self._filenames)
 
@@ -192,6 +203,7 @@ class BinFormat(AbstractReader):
         fmt = BinFormat(
             filenames=filenames,
             offset=self._offset,
+            headers=self._headers,
             dtype=self._dtype,
             metadatas_parsers=self._raw_metas,
             metadatas_indices_conversion_function=lambda i: self._metadatas_indices_conversion_function(indices_map[i]),
@@ -247,6 +259,9 @@ class BinFormat(AbstractReader):
                 for idx in range(len(self._filenames))
             ]
         )
+
+    def fetch_header(self, key):
+        return self._headers[key]
 
     def get_trace_size(self, trace_id):
         return self._trace_size

@@ -265,8 +265,6 @@ def test_samples_support_boolean_indexing(samples):
 
 def test_samples_support_boolean_indexing_2d(s2d):
     boolean = np.array([True] + [False] * (s2d.shape[1] - 2) + [True], dtype=bool)
-    print(s2d.shape)
-    print(s2d[:, boolean].shape)
     assert s2d[:, boolean].shape[1] == 2
     assert np.array_equal(s2d[:, 0], s2d[:, boolean][:, 0])
     assert np.array_equal(s2d[:, -1], s2d[:, boolean][:, 1])
