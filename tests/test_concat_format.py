@@ -71,3 +71,61 @@ def test_meta_strings_with_different_lengths():
 
     assert np.array_equal(ets.str_meta[:], str_stack)
     assert np.array_equal(ets.np_str_meta[:], np_str_stack)
+
+
+def test_inconsistent_headers_raises_exception():
+    ths_1 = estraces.read_ths_from_ram(
+        np.random.randint(0, 255, (1000, 1200), dtype='uint8'),
+        headers={'foo': 'ths_1', 'bar': 'bar'},
+        plaintext=np.random.randint(0, 255, (1000, 16), dtype='uint8')
+    )
+    ths_2 = estraces.read_ths_from_ram(
+        np.random.randint(0, 255, (1000, 1200), dtype='uint8'),
+        headers={'foo': 'ths_2', 'bar': 'bar'},
+        plaintext=np.random.randint(0, 255, (1000, 16), dtype='uint8')
+    )
+    with pytest.raises(ValueError):
+        concat_format.read_ths_from_multiple_ths(ths_1, ths_2)
+    ths_1 = estraces.read_ths_from_ram(
+        np.random.randint(0, 255, (1000, 1200), dtype='uint8'),
+        headers={'foo': 'ths_1', 'bar': 'bar'},
+        plaintext=np.random.randint(0, 255, (1000, 16), dtype='uint8')
+    )
+    ths_2 = estraces.read_ths_from_ram(
+        np.random.randint(0, 255, (1000, 1200), dtype='uint8'),
+        headers={'foo_2': 'ths_2', 'bar': 'bar'},
+        plaintext=np.random.randint(0, 255, (1000, 16), dtype='uint8')
+    )
+    with pytest.raises(ValueError):
+        concat_format.read_ths_from_multiple_ths(ths_1, ths_2)
+
+
+def test_headers_can_be_overridden():
+    ths_1 = estraces.read_ths_from_ram(
+        np.random.randint(0, 255, (1000, 1200), dtype='uint8'),
+        headers={'foo': 'ths_1', 'bar': 'bar', 'spec': 1},
+        plaintext=np.random.randint(0, 255, (1000, 16), dtype='uint8')
+    )
+    ths_2 = estraces.read_ths_from_ram(
+        np.random.randint(0, 255, (1000, 1200), dtype='uint8'),
+        headers={'foo': 'ths_2', 'bar': 'bar', 'true': 2},
+        plaintext=np.random.randint(0, 255, (1000, 16), dtype='uint8')
+    )
+    with pytest.raises(ValueError):
+        concat_format.read_ths_from_multiple_ths(ths_1, ths_2)
+
+    ths = concat_format.read_ths_from_multiple_ths(
+        ths_1, ths_2,
+        headers={
+            'foo': 'concat ths',
+            'spec': 1,
+            'true': 2,
+            'new_header': 'new'
+        }
+    )
+    assert sorted(list(ths.headers.keys())) == ['bar', 'foo', 'new_header', 'spec', 'true']
+    assert ths.headers['foo'] == 'concat ths'
+    assert ths.headers['bar'] == 'bar'
+    assert ths.headers['spec'] == 1
+    assert ths.headers['true'] == 2
+    assert ths.headers['new_header'] == 'new'

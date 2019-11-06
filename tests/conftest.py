@@ -17,16 +17,24 @@ PLAINS = np.array([np.random.randint(0, 256, 16, dtype="uint8") for i in range(1
 INDICES = np.array(['00', '01', '02', '03', '04', '05', '06', '07', '08', '09'])
 _IND = np.array(['00', '01', '02', '03', '04', '05', '06', '07', '08', '09'], dtype='S2')
 DATAS = np.vstack([np.random.randint(0, 256, 1000, dtype="uint8") for i in range(10)])
+KEY = np.random.randint(0, 255, (16,), dtype='uint8')
+TIME = 'this is a time'
+FOO = 'this is foo'
+
+_HEADERS = {
+    'key': KEY,
+    'time': TIME,
+    'foo': FOO
+}
 
 
 def ram_reader(request):
-    return ram_format.RAMReader(samples=DATAS, ciphertext=CIPHERS, plaintext=PLAINS, plain_t=PLAINS, indices=INDICES)
+    return ram_format.RAMReader(samples=DATAS, headers=_HEADERS, ciphertext=CIPHERS, plaintext=PLAINS, plain_t=PLAINS, indices=INDICES)
 
 
 def concat_reader(request):
     ets = estraces.traces.trace_header_set.build_trace_header_set(reader=ets_reader(request), name="None")
     binr = estraces.traces.trace_header_set.build_trace_header_set(reader=bin_format_reader(request), name="None")
-    # trs = estraces.traces.trace_header_set.build_trace_header_set(reader=trs_reader(request), name="None")
     return concat_format.ConcatFormatReader(ets=ets[:6], binr=binr[6:])
 
 
@@ -34,6 +42,7 @@ def dumb_format(request):
     return DumbFormat(
         datas=DATAS,
         metadatas={"ciphertext": CIPHERS, "plaintext": PLAINS, "indices": INDICES, "plain_t": PLAINS},
+        headers=_HEADERS
     )
 
 
@@ -88,6 +97,7 @@ def bin_format_reader(request):
 
     return bin_format.BinFormat(
         filenames=files,
+        headers=_HEADERS,
         offset=0,
         dtype='uint8',
         metadatas_parsers={
@@ -109,6 +119,8 @@ def write_ets_file():
     file['metadata'].create_dataset('plaintext', dtype='uint8', shape=(10, 16))
     file['metadata'].create_dataset('plain_t', dtype='uint8', shape=(10, 16))
     file['metadata'].create_dataset('indices', dtype='S2', shape=(10,))
+    for k, v in _HEADERS.items():
+        file['metadata'].attrs[k] = v
     for i in range(10):
         file['traces'][i] = DATAS[i]
         file['metadata']['ciphertext'][i] = CIPHERS[i]
@@ -127,6 +139,7 @@ def trs_reader(request):
     request.addfinalizer(_)
     return trs_format.TRSFormatReader(
         filename=TRS_FILENAME,
+        custom_headers=_HEADERS,
         metadatas_parsers={
             'plaintext': lambda d: np.array(bytearray(d[16:32])),
             'ciphertext': lambda d: np.array(bytearray(d[0:16])),
@@ -146,7 +159,7 @@ def ets_reader(request):
     return ets_format.ETSFormatReader(filename=ETS_FILENAME)
 
 
-fixtures_formats = [dumb_format, ets_reader, bin_format_reader, trs_reader, ram_reader, concat_reader]
+fixtures_formats = [dumb_format, ets_reader, bin_format_reader, ram_reader, concat_reader, trs_reader]
 
 
 @pytest.fixture(params=fixtures_formats)

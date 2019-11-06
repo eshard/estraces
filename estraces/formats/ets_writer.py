@@ -95,6 +95,7 @@ class ETSWriter:
         batch_size = _get_optimal_batch_size(trace_header_set)
         self.add_samples(trace_header_set.samples, batch_size=batch_size)
         self.add_metadata(trace_header_set.metadatas, batch_size=batch_size)
+        self.write_headers(trace_header_set.headers)
 
     def add_trace(self, trace: _trace.Trace):
         """Append trace samples and metadata provided to the end of the ETS.
@@ -187,6 +188,11 @@ class ETSWriter:
     def write_points(self, points, index=None):
         warnings.warn('This method is deprecated and will be removed in a future version. Use write_samples instead.', DeprecationWarning)
         return self.write_samples(points, index=index)
+
+    def write_headers(self, headers):
+        if not self._is_init:
+            self._init_file()
+        self._h5_file[METADATA_GROUP_KEY].attrs.update(headers)
 
     def write_metadata(self, key, value, index=None, scalar=False):
         """Write provided metadata at specified index of the ETS.
