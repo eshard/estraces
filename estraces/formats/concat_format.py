@@ -13,6 +13,8 @@ def read_ths_from_multiple_ths(*args, **kwargs):
         args: some `TraceHeaderSet` objects.
         kwargs: some `TraceHeaderSet` objects.
 
+    You can pass a headers dict argument to override inconsistent headers between trace header sets or add custom values.
+
     Note:
         shape and metadata must be consistent between each ths.
 
@@ -30,11 +32,13 @@ class ConcatFormatReader(AbstractReader):
 
     def __init__(self, *args, **kwargs):
 
+        headers = kwargs.pop('headers', {})
         all_args = dict(**{f'ths_{i}': arg for i, arg in enumerate(args)}, **kwargs)
         self._check_are_trace_header_sets(all_args)
         self._check_metadata_consistency(all_args)
         self._check_sample_shapes_and_dtype_consistency(all_args)
         self._check_metadata_shapes_and_dtype_consistency(all_args)
+        self._headers = self._check_headers(all_args, headers)
 
         self.ths_list = list(all_args.values())
         self._ths_dict = all_args
@@ -61,6 +65,35 @@ class ConcatFormatReader(AbstractReader):
             set1 = set(thss_dict[key]._reader.metadatas_keys)
             if set0 != set1:
                 raise ValueError(f'Inconsistent metadatas between: {key0}, {set0} and {key}, {set1}')
+
+    @staticmethod
+    def _check_headers(thss_dict, headers={}):
+        ths_0 = list(thss_dict.values())[0]
+        set_0 = set(ths_0.headers.keys())
+        for key, ths in thss_dict.items():
+            if ths == ths_0:
+                continue
+            set_1 = set(ths.headers.keys())
+            if set_0 != set_1:
+                diff = set_0.difference(set_1)
+                for key in diff:
+                    if key not in headers:
+                        raise ValueError(
+                            f'Inconsistent headers, {key} missing from one ths.\
+                            You should override headers values by passing a headers dict to the constructor.'
+                        )
+            for k in set_0:
+                if k not in headers:
+                    val_1 = ths.headers[k]
+                    val_2 = ths_0.headers[k]
+                    equal = _np.array_equal(val_1, val_2) if isinstance(val_1, _np.ndarray) else val_1 == val_2
+                    if not equal:
+                        raise ValueError(
+                            f'Inconsistent headers values between {ths_0} and {ths} for header {k}.\
+                            You should override headers values by passing a headers dict to the constructor.'
+                        )
+                    headers[k] = val_1
+        return headers
 
     @staticmethod
     def _check_sample_shapes_and_dtype_consistency(thss_dict):
@@ -187,6 +220,13 @@ class ConcatFormatReader(AbstractReader):
     @property
     def metadatas_keys(self):
         return self.ths_list[0]._reader.metadatas_keys
+
+    @property
+    def headers_keys(self):
+        return self._headers.keys()
+
+    def fetch_header(self, key):
+        return self._headers[key]
 
     def get_trace_size(self, trace_id):
         return self._trace_size

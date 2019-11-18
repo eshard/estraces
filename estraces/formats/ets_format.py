@@ -54,6 +54,9 @@ class ETSFormatReader(AbstractReader):
     def _metadatas(self):
         return self._h5_file[_METADATAS_KEY]
 
+    def fetch_header(self, key):
+        return self._h5_file[_METADATAS_KEY].attrs[key]
+
     def fetch_metadatas(self, key, trace_id):
         if trace_id is not None:
             trace_index = self._convert_trace_index_to_file_index(trace_id)
@@ -153,6 +156,10 @@ class ETSFormatReader(AbstractReader):
     def metadatas_keys(self):
         # A keys only dict value is instantiated here because h5py doesn't manage properly all keys' types.
         return {k: None for k in self._h5_file[_METADATAS_KEY].keys()}.keys()
+
+    @property
+    def headers_keys(self):
+        return {k: None for k in self._h5_file[_METADATAS_KEY].attrs.keys()}.keys()
 
     def get_trace_size(self, trace_id):
         return self._trace_size

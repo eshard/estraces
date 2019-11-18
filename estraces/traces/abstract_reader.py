@@ -73,6 +73,19 @@ class AbstractReader(abc.ABC):
         if not isinstance(key, (slice, list, _np.ndarray)):
             raise TypeError('Only slice, 1 dimension numpy array and lists are valid indices for types implementing AbstractReader')
 
+    @abc.abstractmethod
+    def fetch_header(self, key: typing.Hashable):
+        """Fetch header value for the given key.
+
+        Args:
+            key (typing.Hashable): key of the header to fetch.
+
+        Returns:
+            the header value.
+
+        """
+        pass
+
     @property
     @abc.abstractmethod
     def metadatas_keys(self):
@@ -82,4 +95,10 @@ class AbstractReader(abc.ABC):
     @abc.abstractmethod
     def get_trace_size(self, trace_id):
         """Provides the size of trace trace_id."""
+        pass
+
+    @property
+    @abc.abstractmethod
+    def headers_keys(self):
+        """Provides a list or view of the headers keys available."""
         pass

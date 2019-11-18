@@ -5,7 +5,7 @@ from estraces import AbstractReader
 
 class Format(AbstractReader):
 
-    def __init__(self, datas=None, metadatas=None):
+    def __init__(self, datas=None, metadatas=None, headers=None):
         self._datas = (
             np.vstack(
                 [np.random.randint(0, 256, 10000, dtype="uint8") for i in range(10)]
@@ -18,6 +18,11 @@ class Format(AbstractReader):
             "key1": np.array(range(self._size)),
             3: np.array(range(self._size))
         } if metadatas is None else metadatas
+
+        self._raw_headers = {
+            'key': np.array([12, 14]),
+            6: 'foo'
+        } if headers is None else {k: v for k, v in headers.items()}
 
     def fetch_samples(self, traces, frame=None):
         if len(traces) == self._size:
@@ -48,7 +53,14 @@ class Format(AbstractReader):
             key = np.array(key, dtype='uint8')
         elif isinstance(key, int):
             key = np.array([key], dtype='uint8')
-        return Format(datas=self._datas[key, :], metadatas={k: v[key] for k, v in self._raw_metadatas.items()})
+        return Format(datas=self._datas[key, :], headers=self._raw_headers, metadatas={k: v[key] for k, v in self._raw_metadatas.items()})
 
     def get_trace_size(self, trace_id):
         return self._datas[trace_id].shape[0]
+
+    @property
+    def headers_keys(self):
+        return self._raw_headers.keys()
+
+    def fetch_header(self, key):
+        return self._raw_headers[key]

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from . import trace, samples, metadatas, _metaclass
+from . import trace, samples, metadatas, _metaclass, headers
 from . import abstract_reader
 from .._legacy_formats.trace import TraceDeprecated
 from .._legacy_formats.trace_header_set import TraceHeaderSetDeprecated
@@ -41,6 +41,7 @@ class TraceHeaderSet:
     Attributes:
         name (str): name of traces set
         metadatas (:class:`Metadatas`): dict-like metadatas object
+        headers (:class:`Headers`): mapping of headers for this trace set, ie one off value metadata.
         samples (:class:`Samples`): 2 dimensions samples object
         traces (list): list of :class:`Trace` instances
 
@@ -49,7 +50,7 @@ class TraceHeaderSet:
 
     Examples:
         With a :class:`TraceHeaderSet` instance you can manipulate underlying :class:`Traces`, samples data,
-        metadatas, slice, iterate or filter on your set.
+        metadatas, headers, slice, iterate or filter on your set.
 
         Iterate on :class:`TraceHeaderSet` instance::
 
@@ -84,6 +85,10 @@ class TraceHeaderSet:
         Each metadata can be reached with its own attribute::
 
             ths.plaintext # is equivalent to ths.metadatas['plaintext']
+
+        Headers are metadata which have only one value for all the trace set. It is hold on a mapping, dict like object:
+
+            ths.headers['key']
 
         Filter traces in your ths with any arbitrary filtering function.
         As an example, get a new TraceHeaderSet with traces which first samples value is even::
@@ -121,6 +126,7 @@ class TraceHeaderSet:
         )
         self._traces = None
         self._metadatas = None
+        self._headers = None
         self._samples = None
 
     def __str__(self):
@@ -197,6 +203,12 @@ class TraceHeaderSet:
         if not self._metadatas:
             self._metadatas = metadatas.Metadatas(reader=self._reader)
         return self._metadatas
+
+    @property
+    def headers(self):
+        if not self._headers:
+            self._headers = headers.Headers(reader=self._reader)
+        return self._headers
 
     @property
     def samples(self):
