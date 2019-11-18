@@ -1,7 +1,7 @@
 from .context import estraces  # noqa
 import pytest
 import numpy as np
-from .conftest import PLAINS, CIPHERS
+from .conftest import PLAINS, CIPHERS, KEY, TIME, FOO
 
 
 @pytest.fixture
@@ -35,3 +35,13 @@ def test_read_metadatas_attributes_missing_raises_attribute_error(trace):
 def test_trace_samples_is_samples_type(trace):
     assert isinstance(trace.samples, estraces.traces.samples.Samples)
     assert len(trace.samples) == 1000
+
+
+def test_attribute_headers_returns_headers_type(trace):
+    assert isinstance(trace.headers, estraces.traces.headers.Headers)
+
+
+def test_attribute_headers(trace):
+    assert np.array_equal(trace.headers['key'], KEY)
+    assert trace.headers['time'] == TIME
+    assert trace.headers['foo'] == FOO

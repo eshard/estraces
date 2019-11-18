@@ -24,13 +24,13 @@ def read_ths_from_ram(samples, **kwargs):
 
 class RAMReader(AbstractReader):
 
-    def __init__(self, samples, **kwargs):
+    def __init__(self, samples, headers={}, **kwargs):
         self._test_nd_arrays(samples, kwargs)
         self._test_shapes_compatibility(samples, kwargs)
 
         self._samples = samples
         self._kwargs_dict = kwargs
-
+        self._headers = {k: v for k, v in headers.items()}
         self._size, self._trace_size = samples.shape
 
     @staticmethod
@@ -56,6 +56,9 @@ class RAMReader(AbstractReader):
         else:
             return self._kwargs_dict[key]
 
+    def fetch_header(self, key):
+        return self._headers[key]
+
     def fetch_samples(self, traces, frame):
         if isinstance(traces, int):
             traces = [traces]
@@ -74,13 +77,18 @@ class RAMReader(AbstractReader):
 
         new_samples = self._samples[key]
         new_kwargs = {item[0]: item[1][key] for item in self._kwargs_dict.items()}
-        new_reader = RAMReader(new_samples, **new_kwargs)
+        new_reader = RAMReader(new_samples, headers=self._headers, **new_kwargs)
         return new_reader
 
     @property
     def metadatas_keys(self):
         """Provides a list or views of the metadatas keys available."""
         return self._kwargs_dict.keys()
+
+    @property
+    def headers_keys(self):
+        """Provides a list or views of the headers keys available."""
+        return self._headers.keys()
 
     def get_trace_size(self, trace_id):
         """Provides the size of trace trace_id."""

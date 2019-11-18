@@ -1,4 +1,5 @@
 from .context import estraces  # noqa
+from .conftest import _HEADERS
 import numpy as np
 import os
 from estraces import ETSWriter
@@ -547,3 +548,38 @@ def test_compress_ets(ets_filenames):
     assert np.array_equal(ths.ciphertext, ths_comp.ciphertext)
     assert np.array_equal(ths.chairs, ths_comp.chairs)
     assert os.path.getsize(filename) > 1.1 * os.path.getsize(compressed)
+
+
+def test_write_headers(ets_filenames):
+    ets = estraces.ETSWriter(filename, overwrite=True)
+    ets.write_samples(np.random.randint(0, 255, (1000, 100), dtype='uint8'))
+    ets.write_headers(_HEADERS)
+    ths = ets.get_reader()
+    assert np.array_equal(ths.headers['key'], _HEADERS['key'])
+    assert ths.headers['foo'] == _HEADERS['foo']
+    assert ths.headers['time'] == _HEADERS['time']
+
+
+def test_add_trace_header_set_with_headers(ets_filenames):
+    ets = estraces.ETSWriter(filename, overwrite=True)
+    ths = estraces.read_ths_from_ram(
+        np.random.randint(-55000, 55000, (nb_trace, nb_points), dtype='int32'),
+        headers=_HEADERS,
+        plaintext=np.random.randint(0, 256, (nb_trace, 16), dtype='uint8'),
+        ciphertext=np.random.randint(0, 256, (nb_trace, 16), dtype='uint8'),
+        chairs=np.array([f'chair{i}' for i in range(nb_trace)])
+    )
+    ets.add_trace_header_set(ths)
+    ths = ets.get_reader()
+    assert np.array_equal(ths.headers['key'], _HEADERS['key'])
+    assert ths.headers['foo'] == _HEADERS['foo']
+    assert ths.headers['time'] == _HEADERS['time']
+
+    ets = estraces.ETSWriter(filename_1, overwrite=True)
+    ets.add_trace_header_set(ths)
+    ets.write_headers({'bar': 'bar'})
+    ths = ets.get_reader()
+    assert np.array_equal(ths.headers['key'], _HEADERS['key'])
+    assert ths.headers['foo'] == _HEADERS['foo']
+    assert ths.headers['time'] == _HEADERS['time']
+    assert ths.headers['bar'] == 'bar'

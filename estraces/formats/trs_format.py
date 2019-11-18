@@ -29,17 +29,25 @@ def read_ths_from_trs_file(filename, metadatas_parsers, dtype=None):
 
 class TRSFormatReader(abstract_reader.AbstractReader):
 
-    def __init__(self, filename, metadatas_parsers, dtype=None):
+    def __init__(self, filename, metadatas_parsers, custom_headers={}, dtype=None):
         self._filename = filename
         self._sub_traceset_indices = None
+        self._headers = {k: v for k, v in custom_headers.items()}
+        self._custom_headers = self._headers
         try:
             with _trsfile.open(filename, 'r') as trs_file:
-                self._headers = trs_file.get_headers()
-                self._size = self._headers[_trsfile.Header.NUMBER_TRACES]
+                self._internal_headers = trs_file.get_headers()
+                self._headers.update(
+                    {
+                        f'{str(k).replace("Header.", "").lower()}':
+                            v.value if isinstance(v, _trsfile.SampleCoding) else v for k, v in self._internal_headers.items()
+                    }
+                )
+                self._size = self._internal_headers[_trsfile.Header.NUMBER_TRACES]
         except (FileNotFoundError, ValueError, NotImplementedError) as e:
             raise AttributeError(f"{filename} is not a valid TRS file or filename. Original exception was:{e}.")
         self._set_metadatas_parsers(metadatas_parsers)
-        self.dtype = _np.dtype(dtype) if dtype else self._headers[_trsfile.Header.SAMPLE_CODING].format
+        self.dtype = _np.dtype(dtype) if dtype else self._internal_headers[_trsfile.Header.SAMPLE_CODING].format
 
     def _set_metadatas_parsers(self, metadatas_parsers):
         self._metadatas_parsers = metadatas_parsers
@@ -58,6 +66,9 @@ class TRSFormatReader(abstract_reader.AbstractReader):
             raw_traces = [trs_file[trace] for trace in traces]
             samples = _np.array([trace[frame] for trace in raw_traces], dtype=self.dtype)
         return samples
+
+    def fetch_header(self, key):
+        return self._headers[key]
 
     def fetch_metadatas(self, key, trace_id):
         if trace_id is not None:
@@ -89,7 +100,8 @@ class TRSFormatReader(abstract_reader.AbstractReader):
         traces_number = len(sub_traceset_indices)
         new_reader = TRSFormatReader(
             filename=self._filename,
-            metadatas_parsers=self._metadatas_parsers
+            metadatas_parsers=self._metadatas_parsers,
+            custom_headers=self._custom_headers
         )
         new_reader._sub_traceset_indices = sub_traceset_indices
         new_reader._size = traces_number
@@ -99,8 +111,12 @@ class TRSFormatReader(abstract_reader.AbstractReader):
     def metadatas_keys(self):
         return self._metadatas_parsers.keys()
 
+    @property
+    def headers_keys(self):
+        return self._headers.keys()
+
     def get_trace_size(self, trace_id):
-        return self._headers[_trsfile.Header.NUMBER_SAMPLES]
+        return self._internal_headers[_trsfile.Header.NUMBER_SAMPLES]
 
     def _convert_traces_indices_to_file_indices_array(self, traces):
         if self._sub_traceset_indices is not None:

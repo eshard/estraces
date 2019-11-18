@@ -62,3 +62,8 @@ def test_trs_reader_optionnal_dtype_overrides_default():
     assert ths.samples[0, :].dtype == 'uint16'
     ths = read_ths_from_trs_file(filename=TRS_FILENAME, metadatas_parsers={}, dtype='uint8')
     assert ths.samples[0, :].dtype == 'uint8'
+
+
+def test_trs_headers_provides_native_file_format_headers():
+    ths = read_ths_from_trs_file(filename=TRS_FILENAME, metadatas_parsers={})
+    assert dict(ths.headers) == {'title_space': 0, 'sample_coding': 1, 'length_data': 32, 'number_samples': 1920, 'number_traces': 500, 'trace_block': None}
