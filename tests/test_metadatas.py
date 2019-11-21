@@ -81,3 +81,9 @@ def test_metadatas_cache(metas_1_ths):
     metas_1_ths["ciphertext"]
     assert "ciphertext" in metas_1_ths._cache
     assert np.array_equal(metas_1_ths._cache['ciphertext'], CIPHERS)
+
+
+def test_metadatas_set_new_attribute(metadatas):
+    metadatas['new_attribute'] = 'foo'
+
+    assert metadatas['new_attribute'] == 'foo'

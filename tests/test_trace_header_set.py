@@ -292,3 +292,36 @@ def test_attribute_headers(ths):
     assert np.array_equal(ths.headers['key'], KEY)
     assert ths.headers['time'] == TIME
     assert ths.headers['foo'] == FOO
+
+
+def test_add_metadata_to_ths(ths):
+    datas = np.random.randint(0, 255, (len(ths), 1), dtype='uint8')
+    ths.metadatas['new_meta'] = datas
+    assert np.array_equal(ths.metadatas['new_meta'], datas)
+    assert np.array_equal(ths.new_meta, datas)
+
+
+def test_add_metadata_to_ths_through_attribute(ths):
+    datas = np.random.randint(0, 255, (len(ths), 1), dtype='uint8')
+    ths.new_meta = datas
+    assert np.array_equal(ths.metadatas['new_meta'], datas)
+    assert np.array_equal(ths.new_meta, datas)
+
+    sub_ths = ths[0:2]
+    assert np.array_equal(sub_ths.metadatas['new_meta'], datas[:2])
+    assert np.array_equal(sub_ths.new_meta, datas[:2])
+
+    trace = ths[8]
+    assert np.array_equal(trace.metadatas['new_meta'], datas[8])
+    assert np.array_equal(trace.new_meta, datas[8])
+
+
+def test_add_existing_metadata_or_attribute_raises_exception(ths):
+    with pytest.raises(AttributeError):
+        ths.plaintext = 'foo'
+    with pytest.raises(AttributeError):
+        ths.samples = 'foo'
+    ths.__doc__ = 'foo'
+    assert ths.__doc__ == 'foo'
+    with pytest.raises(KeyError):
+        ths.metadatas['__doc__']
