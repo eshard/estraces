@@ -29,6 +29,10 @@ class Metadatas(collections.abc.Mapping):
             self._cache[key] = self._reader.fetch_metadatas(key=key, trace_id=self._trace_id)
         return self._cache[key]
 
+    def __setitem__(self, key, value):
+        self._cache[key] = value
+        self._keys = list(self._keys) + [key]
+
     def is_trace(self):
         return self._trace_id is not None
 
@@ -39,7 +43,16 @@ class Metadatas(collections.abc.Mapping):
         return iter(self._keys)
 
     def __repr__(self):
-        return f"{self._keys}-{self._reader}"
+        return f'{self._keys}-{self._reader}'
 
     def __str__(self):
         return repr(self)
+
+    def _copy_with_cache(self, key):
+        tid = key if isinstance(key, int) else None
+        m = self.__class__(reader=self._reader, trace_id=tid)
+        m._keys = self._keys
+        m._cache = {
+            k: v[key] for k, v in self._cache.items()
+        }
+        return m

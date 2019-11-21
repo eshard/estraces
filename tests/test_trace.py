@@ -45,3 +45,26 @@ def test_attribute_headers(trace):
     assert np.array_equal(trace.headers['key'], KEY)
     assert trace.headers['time'] == TIME
     assert trace.headers['foo'] == FOO
+
+
+def test_add_metadata_to_trace(trace):
+    trace.metadatas['new_meta'] = 'foo'
+    assert trace.metadatas['new_meta'] == 'foo'
+    assert trace.new_meta == 'foo'
+
+
+def test_add_metadata_to_trace_through_attribute(trace):
+    trace.new_meta = 'foo'
+    assert trace.new_meta == 'foo'
+    assert trace.metadatas['new_meta'] == 'foo'
+
+
+def test_add_existing_metadata_or_attribute_raises_exception(trace):
+    with pytest.raises(AttributeError):
+        trace.plaintext = 'foo'
+    with pytest.raises(AttributeError):
+        trace.samples = 'foo'
+    trace.__doc__ = 'foo'
+    assert trace.__doc__ == 'foo'
+    with pytest.raises(KeyError):
+        trace.metadatas['__doc__']

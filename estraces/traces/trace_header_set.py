@@ -101,6 +101,7 @@ class TraceHeaderSet:
     """
 
     _is_valid_trace_class = False
+    _is_initialized = False
 
     def __init__(self, reader, name=""):
         """Must not be instantiate or initialized directly, only through :func:`build_trace_header_set`."""
@@ -128,6 +129,7 @@ class TraceHeaderSet:
         self._metadatas = None
         self._headers = None
         self._samples = None
+        self._is_initialized = True
 
     def __str__(self):
         r = f'Trace Header Set:\n{"Name":.<17}: {self.name}\n{"Reader":.<17}: {self._reader}\n'
@@ -140,6 +142,18 @@ class TraceHeaderSet:
 
     def __len__(self):
         return len(self.traces)
+
+    def __getattr__(self, name):
+        try:
+            return self.metadatas[name]
+        except KeyError:
+            return super().__getattr__(name)
+
+    def __setattr__(self, name, value):
+        if name not in self.__dir__() and self._is_initialized:
+            self.metadatas  # Metadata needs to be instantiated before adding a in-memory metadata.
+            self._metadatas[name] = value
+        return super().__setattr__(name, value)
 
     def _transpose_slice(self, key):
         start = key.start
@@ -164,7 +178,10 @@ class TraceHeaderSet:
 
         """
         if isinstance(key, int):
-            return self.traces[key]
+            trace = self.traces[key]
+            if self._metadatas:
+                trace._metadatas = self._metadatas._copy_with_cache(key=key)
+            return trace
         elif isinstance(key, (slice, list, _np.ndarray)):
             if isinstance(key, _np.ndarray):
                 if key.ndim > 1 or key.dtype.kind not in ['i', 'u']:
@@ -178,6 +195,8 @@ class TraceHeaderSet:
             new_ths = type(self).__new__(type(self))
             reader = self._reader[key]
             new_ths.__init__(name=self.name, reader=reader)
+            if self._metadatas:
+                new_ths._metadatas = self._metadatas._copy_with_cache(key=key)
             return new_ths
         else:
             if isinstance(key, tuple):
