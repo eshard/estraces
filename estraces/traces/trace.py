@@ -37,6 +37,8 @@ class Trace:
 
     """
 
+    _is_initialized = False
+
     def __init__(self, trace_id, reader):
         if trace_id is None:
             raise AttributeError("trace_id can't be None.")
@@ -53,8 +55,9 @@ class Trace:
         try:
             self.id = self._id
         except AttributeError:
-            # Name is already a metadata of the ths, so we don't bother with it.
+            # id is already a metadata of the ths, so we don't bother with it.
             pass
+        self._is_initialized = True
 
     def __len__(self):
         return len(self.samples)
@@ -88,3 +91,15 @@ class Trace:
         for k in self.metadatas.keys():
             r += f'{k:.<17}: {self.metadatas.get(k)}\n'
         return r
+
+    def __getattr__(self, name):
+        try:
+            return self.metadatas[name]
+        except KeyError:
+            raise AttributeError(f'No attribute {name}.')
+
+    def __setattr__(self, name, value):
+        if name not in self.__dir__() and self._is_initialized:
+            self.metadatas  # Metadata needs to be instantiated before adding a in-memory metadata.
+            self._metadatas[name] = value
+        super().__setattr__(name, value)

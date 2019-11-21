@@ -399,13 +399,15 @@ def test_ets_writer_add_trace_header_set(ets_filenames):
         plaintext=plaintext,
         ciphertext=ciphertext
     )
+    new_meta = np.random.randint(0, 255, (len(ths), 1), dtype='uint8')
+    ths.metadatas['new'] = new_meta
     out.add_trace_header_set(ths)
-
     out_ths = out.get_reader()
     assert np.array_equal(out_ths.plaintext, plaintext)
     assert np.array_equal(out_ths.ciphertext, ciphertext)
     assert out_ths.chair.tolist() == chair.tolist()
     assert np.array_equal(out_ths.samples.array, datas)
+    assert np.array_equal(out_ths.new, new_meta)
 
 
 def test_ets_writer_add_ths_raises_exception_if_ths_has_improper_types(ets_filenames):
