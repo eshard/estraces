@@ -17,6 +17,8 @@ class Headers(collections.abc.Mapping):
         self._keys = reader.headers_keys
 
     def __getitem__(self, key):
+        if not isinstance(key, str):
+            raise TypeError(f'key must be a str, not {type(key)}.')
         if key not in self._keys:
             raise KeyError("Header with key {k} missing".format(k=key))
         return self._reader.fetch_header(key=key)
