@@ -22,7 +22,7 @@ def test_read_headers_key_throws_key_error_on_missing_key(headers):
     with pytest.raises(KeyError):
         headers["missing"]
     with pytest.raises(KeyError):
-        headers[3]
+        headers["3"]
 
 
 def test_read_headers_key_throws_type_error_on_incorrect_key_type(headers):

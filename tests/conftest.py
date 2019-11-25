@@ -1,6 +1,6 @@
 import pytest
 from .context import estraces  # noqa
-from estraces.formats import ets_format, bin_format, bin_extractor, trs_format, ram_format, concat_format
+from estraces.formats import ets_format, bin_format, bin_extractor, trs_format, ram_format, concat_format, sqlite_format
 from .format_test_implementation import Format as DumbFormat
 import numpy as np
 import h5py
@@ -8,7 +8,7 @@ import uuid
 import os
 import glob
 import trsfile
-
+import sqlite3
 
 np.random.seed(987654321)
 
@@ -159,7 +159,85 @@ def ets_reader(request):
     return ets_format.ETSFormatReader(filename=ETS_FILENAME)
 
 
-fixtures_formats = [dumb_format, ets_reader, bin_format_reader, ram_reader, concat_reader, trs_reader]
+SQLITE_FILENAME = 'tests/samples/test.db'
+
+
+def write_sqlite3():
+
+    try:
+        conn = sqlite3.connect(SQLITE_FILENAME)
+        create_samples = '''
+        CREATE TABLE traces (
+            trace_id INTEGER PRIMARY KEY NOT NULL,
+            samples BLOB,
+            plaintext BLOB,
+            plain_t BLOB,
+            ciphertext BLOB,
+            indices BLOB
+        )
+        '''
+        cur = conn.cursor()
+        cur.execute(create_samples)
+        create_headers = '''
+        CREATE TABLE headers (
+            id INTEGER PRIMARY KEY NOT NULL,
+            tag VARCHAR,
+            dtype VARCHAR,
+            value BLOB
+        )
+        '''
+        cur = conn.cursor()
+        cur.execute(create_headers)
+
+        insert = '''
+        INSERT INTO traces(trace_id, samples, plaintext, ciphertext, indices, plain_t) VALUES (?, ?, ?, ?, ?, ?)
+        '''
+        for i in range(len(DATAS)):
+            cur = conn.cursor()
+            cur.execute(insert, (i, DATAS[i], PLAINS[i], CIPHERS[i], INDICES[i], PLAINS[i]))
+
+        insert = f'INSERT INTO headers(id, tag, value, dtype) VALUES (?, ?, ?, ?)'
+        i = 1
+        for k, v in _HEADERS.items():
+            cur = conn.cursor()
+            cur.execute(insert, (i, k, v, str(v.dtype) if isinstance(v, np.ndarray) else 'str'))
+            i += 1
+        conn.commit()
+    except Exception as e:
+        print(e)
+    finally:
+        if conn:
+            conn.close()
+
+
+def sqlite_reader(request):
+    write_sqlite3()
+
+    def _():
+        os.remove(SQLITE_FILENAME)
+    request.addfinalizer(_)
+
+    samples_config = sqlite_format.SamplesConfig(table_name='traces', pk_column_name='trace_id', dtype='uint8', samples_column_name='samples')
+    metadata_config = sqlite_format.MetadataConfig(
+        table_name='traces',
+        pk_column_name='trace_id',
+        metadata_defs={
+            'plaintext': 'uint8',
+            'plain_t': 'uint8',
+            'ciphertext': 'uint8',
+            'indices': 'U2',
+        }
+    )
+    headers_config = sqlite_format.HeadersConfig(table_name='headers', tag_column_name='tag', value_column_name='value', dtype_column_name='dtype')
+    return sqlite_format.SQLiteFormatReader(
+        filename=SQLITE_FILENAME,
+        samples_config=samples_config,
+        metadata_config=metadata_config,
+        headers_config=headers_config
+    )
+
+
+fixtures_formats = [dumb_format, ets_reader, bin_format_reader, ram_reader, concat_reader, trs_reader, sqlite_reader]
 
 
 @pytest.fixture(params=fixtures_formats)
