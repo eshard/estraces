@@ -134,6 +134,7 @@ from .formats import (
     read_ths_from_trs_file,
     read_ths_from_ram,
     read_ths_from_multiple_ths,
+    read_ths_from_sqlite,
     bin_extractor
 )
 from .formats.ets_writer import ETSWriter, ETSWriterException, compress_ets
@@ -157,7 +158,8 @@ __all__ = [
     "build_trace_header_set",
     "PaddingMode",
     "compress_ets",
-    "read_ths_from_multiple_ths"
+    "read_ths_from_multiple_ths",
+    "read_ths_from_sqlite"
 ]
 
 # Set default logging handler to avoid "No handler found" warnings.
