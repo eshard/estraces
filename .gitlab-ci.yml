@@ -9,7 +9,7 @@ stages:
 lint:
   stage: lint
   script:
-    - conda install python=3.6
+    - conda install python=3.6 psutil
     - pip install -e .
     - pip install flake8 pep8-naming flake8-docstrings
     - flake8 --config=.flake8 estraces tests setup.py
@@ -73,7 +73,7 @@ deploy:conda:
 pages:
   stage: build
   script:
-    - conda install python=3.6
+    - conda install python=3.6 psutil
     - pip install -e .
     - cd docs
     - ./build_doc.sh
