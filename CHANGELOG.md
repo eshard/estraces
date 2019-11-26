@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.6.1  (2019-11-26)
+
+* fix: ths slicing behaves properly with metadata cache ([7bb2243](https://gitlab.com/eshard/estraces/commit/7bb2243))
+
 ## 1.6.0 (2019-11-26)
 
 * fix: add psutil as part of estraces dependencies (which solves documentation generation failure on C ([b862873](https://gitlab.com/eshard/estraces/commit/b862873))
