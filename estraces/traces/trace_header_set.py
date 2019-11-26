@@ -196,7 +196,7 @@ class TraceHeaderSet:
             reader = self._reader[key]
             new_ths.__init__(name=self.name, reader=reader)
             if self._metadatas:
-                new_ths._metadatas = self._metadatas._copy_with_cache(key=key)
+                new_ths._metadatas = self._metadatas._copy_with_cache(key=key, reader=reader)
             return new_ths
         else:
             if isinstance(key, tuple):
