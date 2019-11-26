@@ -116,6 +116,10 @@ def test_slice_set(ram1):
     assert [1, 2, 3, 4] == sub2.samples[0, 0:4].tolist()
     assert [10, 11, 12, 13] == sub2.samples[1, 0:4].tolist()
     assert [12, 13, 14, 15] == sub2.samples[2, 0:4].tolist()
+    assert sub1.plaintext.shape[0] == 5
+
+    sub_3 = ram1[0:1]
+    assert sub_3.plaintext.shape[0] == 1
 
 
 def test_split_preserves_length_consistency_of_sub_ths(ram1):
