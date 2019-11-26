@@ -301,6 +301,11 @@ def test_add_metadata_to_ths(ths):
     assert np.array_equal(ths.new_meta, datas)
 
 
+def test_init_metadatas_and_slice_ths_works_as_expected(ths):
+    ths.metadatas
+    assert np.array_equal(ths[:1].metadatas['plaintext'], PLAINS[:1])
+
+
 def test_add_metadata_to_ths_through_attribute(ths):
     datas = np.random.randint(0, 255, (len(ths), 1), dtype='uint8')
     ths.new_meta = datas

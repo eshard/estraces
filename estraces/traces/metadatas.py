@@ -48,9 +48,11 @@ class Metadatas(collections.abc.Mapping):
     def __str__(self):
         return repr(self)
 
-    def _copy_with_cache(self, key):
-        tid = key if isinstance(key, int) else None
-        m = self.__class__(reader=self._reader, trace_id=tid)
+    def _copy_with_cache(self, key, reader=None):
+        if not reader:
+            m = Metadatas(reader=self._reader, trace_id=key)
+        else:
+            m = Metadatas(reader=reader, trace_id=None)
         m._keys = self._keys
         m._cache = {
             k: v[key] for k, v in self._cache.items()
