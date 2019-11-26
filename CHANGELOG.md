@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 1.6.0 (2019-11-26)
+
+* fix: add psutil as part of estraces dependencies (which solves documentation generation failure on C ([b862873](https://gitlab.com/eshard/estraces/commit/b862873))
+* fix: samples supports correct boolean indexing ([d66c7b9](https://gitlab.com/eshard/estraces/commit/d66c7b9))
+* feat: add global Headers on trace header set. ([141a4ed](https://gitlab.com/eshard/estraces/commit/141a4ed))
+* feat: add SQLite format reader API ([c779d53](https://gitlab.com/eshard/estraces/commit/c779d53))
+* feat: improve TraceHeaderSet and Trace representations and strings ([7b409f8](https://gitlab.com/eshard/estraces/commit/7b409f8))
+* feat: new in-memory metadata can be added to a Trace or TraceHeaderSet instance. ([e7bf1f3](https://gitlab.com/eshard/estraces/commit/e7bf1f3))
+
 ## 1.5.0 (2019-10-31)
 
 * feat: change compression API to a function converter - ets writer ([6babe4d](https://gitlab.com/eshard/estraces/commit/6babe4d))
