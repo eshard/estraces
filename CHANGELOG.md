@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.6.2 (2019-11-26)
+
+* fix: ETSWriter method write_trace_object working with index ([b757a70](https://gitlab.com/eshard/estraces/commit/b757a70))
+
 ## 1.6.1  (2019-11-26)
 
 * fix: ths slicing behaves properly with metadata cache ([7bb2243](https://gitlab.com/eshard/estraces/commit/7bb2243))
