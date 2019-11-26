@@ -455,11 +455,10 @@ def test_write_trace_with_new_metadata(ets_filenames):
         ciphertext=ciphertext
     )
 
-    for trace in ths:
+    for index, trace in enumerate(ths):
         trace.new_meta = 'oups'
         out = ETSWriter(filename)
-
-        out.write_trace_object_and_points(trace, trace.samples[:])
+        out.write_trace_object_and_points(trace, trace.samples[:], index)
     out.close()
 
     ths_2 = estraces.read_ths_from_ets_file(filename)
