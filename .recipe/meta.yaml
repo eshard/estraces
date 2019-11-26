@@ -20,6 +20,7 @@ requirements:
     - h5py
     - numpy
     - trsfile
+    - psutil
 
 about:
   home: https://gitlab.com/eshard/estraces
