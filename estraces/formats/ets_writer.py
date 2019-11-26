@@ -161,9 +161,6 @@ class ETSWriter:
         """
         for tag, value in trace_object.metadatas.items():
             self.write_metadata(tag, value, index=index)
-        for k, v in trace_object.__dict__.items():
-            if k[0] != '_' and k not in ('id', 'name'):
-                self.write_metadata(k, v, index=index)
         self.write_samples(points, index=index)
 
     def write_samples(self, samples_array, index=None):
@@ -262,7 +259,6 @@ class ETSWriter:
     def _write_to_data_set(self, data_set, data, index):
         if index is None:
             index = data_set.shape[0]
-
         if index < data_set.shape[0] and not self._overwrite:
             raise ETSWriterException(
                 f'An element already exists in {str(data_set.name)} dataset at index {index} and overwriting is disabled.')
