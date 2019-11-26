@@ -71,10 +71,8 @@ class RAMReader(AbstractReader):
 
     def __getitem__(self, key):
         super().__getitem__(key)
-
         if isinstance(key, int):
             key = [key]
-
         new_samples = self._samples[key]
         new_kwargs = {item[0]: item[1][key] for item in self._kwargs_dict.items()}
         new_reader = RAMReader(new_samples, headers=self._headers, **new_kwargs)
