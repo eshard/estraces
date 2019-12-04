@@ -14,18 +14,51 @@ side-channel analysis framework.
 
 ## Getting started
 
-### Prerequisites
+### Requirements and installation
 
-You will need **Python 3.6+** to use and install estraces. You can use pip (or any pip based tool like pipenv) or conda to install it.
+estraces requires and must work on Python **3.6**, **3.7** and **3.8** versions.
 
-### Installation
+You can install it by several ways:
 
-To install estraces, you can use pip (or pipenv, or any other pip based-tool) or conda:
+- from source
+- with `pip`
+- with `conda`
+
+>At time of writing, we highly recommend to install from `conda` when using `estraces` with **python 3.8**.
+
+#### Installing from source
+
+To install estraces from source, you will need the following requirements:
+
+- `pip` and `setuptools` with version greater than **40.0**
+- For Python **3.8**, you'll need to build and install `h5py` from source see [H5PY installation instructions](https://h5py.readthedocs.io/en/latest/build.html#source-installation) before installing `estraces`
+
+From the source code folder, run:
+
+```python
+pip install .
+```
+
+#### Installing with `pip`
+
+First, you should update your `pip` and `setuptools` version:
 
 ```bash
-$ pip install estraces
-# or with Conda
-$ conda install -c eshard estraces
+pip install -U pip setuptools
+```
+
+If you use **Python 3.8**, you must first build and install `h5py`, [see instructions](https://h5py.readthedocs.io/en/latest/build.html#source-installation).
+
+```bash
+pip install estraces
+```
+
+#### Installing with  `conda`
+
+To install from `conda`, simply run:
+
+```bash
+conda install -c eshard estraces
 ```
 
 ### Opens a trace set
