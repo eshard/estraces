@@ -139,7 +139,6 @@ from .formats import (
 )
 from .formats.ets_writer import ETSWriter, ETSWriterException, compress_ets
 from .formats.bin_format import PaddingMode
-import warnings
 
 __all__ = [
     "Trace",
@@ -167,6 +166,3 @@ import logging
 from .__version__ import __author__ as AUTHOR, __version__ as VERSION, __author_email__ as AUTHOR_EMAIL  # noqa: F401, N812
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
-
-# Always display DeprecationWarning by default.
-warnings.simplefilter('default', category=DeprecationWarning)

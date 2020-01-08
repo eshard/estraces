@@ -87,6 +87,7 @@ def test_samples_slicing_with_int_slice_list_on_traces_index(s2d):
 
 def test_samples_slicing_with_duped_unordered_list(s1d, s2d):
     assert DATAS[0, np.array([1, 4, 3, 7, 4, 9])].tolist() == s1d[np.array([1, 4, 3, 7, 4, 9])].tolist()
+    assert DATAS[[3, 1, 2], :].tolist() == s2d[[3, 1, 2], :].tolist()
     assert DATAS[[3, 1, 2, 1], :].tolist() == s2d[[3, 1, 2, 1], :].tolist()
     assert DATAS[[1, 2, 1], :][:, [7, 8, 7]].tolist() == s2d[[1, 2, 1], [7, 8, 7]].tolist()
 
