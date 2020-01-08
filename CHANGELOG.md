@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.6.3 (2020-01-08)
+
+* fix: optimize fetch samples method of sqlite reader ([c52d286](https://gitlab.com/eshard/estraces/commit/c52d286))
+* maint: update README to add precisions for use with python 3.8 and build from source ([e0f2ca1](https://gitlab.com/eshard/estraces/commit/e0f2ca1))
+
 ## 1.6.2 (2019-11-26)
 
 * fix: ETSWriter method write_trace_object working with index ([b757a70](https://gitlab.com/eshard/estraces/commit/b757a70))
