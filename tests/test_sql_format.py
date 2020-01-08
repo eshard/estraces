@@ -5,6 +5,7 @@ import numpy as np
 from estraces.formats import sqlite_format
 from .conftest import PLAINS, CIPHERS, DATAS, _HEADERS
 import os
+import timeit
 
 
 test_path = 'tests/samples/test.db'
@@ -218,3 +219,62 @@ def test_raises_exception_configuring_non_existing_samples_col(filename):
         ths.samples[:]
     with pytest.raises(sqlite_format.SQLiteError):
         ths._reader.get_trace_size(0)
+
+
+@pytest.fixture
+def lots_of_traces():
+    try:
+        n_traces = 10000
+        l_traces = 200
+        conn = sqlite3.connect('lots_of_traces.db')
+        create_samples = '''
+        CREATE TABLE traces (
+            trace_id INTEGER PRIMARY KEY NOT NULL,
+            samples BLOB,
+            plaintext BLOB
+        )
+        '''
+        cur = conn.cursor()
+        cur.execute(create_samples)
+        create_headers = '''
+        CREATE TABLE headers (
+            id INTEGER PRIMARY KEY NOT NULL,
+            tag VARCHAR,
+            dtype VARCHAR,
+            value BLOB
+        )
+        '''
+        cur = conn.cursor()
+        cur.execute(create_headers)
+
+        insert = '''
+        INSERT INTO traces(trace_id, samples, plaintext) VALUES (?, ?, ?)
+        '''
+        datas = np.random.randint(0, 255, (n_traces, l_traces), dtype='uint8')
+        plains = np.random.randint(0, 255, (n_traces, 16), dtype='uint8')
+
+        for i in range(len(datas)):
+            cur = conn.cursor()
+            cur.execute(insert, (i, datas[i], plains[i]))
+        conn.commit()
+        yield 'lots_of_traces.db'
+    finally:
+        if conn:
+            conn.close()
+        os.remove('lots_of_traces.db')
+
+
+def test_samples_shape_is_not_too_slow(lots_of_traces):
+
+    ths = estraces.read_ths_from_sqlite(
+        lots_of_traces,
+        samples_config=sqlite_format.SamplesConfig(),
+        metadata_config=sqlite_format.MetadataConfig(metadata_defs={'plaintext': 'uint8'})
+    )
+    assert isinstance(ths, estraces.TraceHeaderSet)
+    stm = 's_ths.samples.shape'
+    s_ths = ths[:100]
+    t1 = timeit.timeit(stm, globals={'s_ths': s_ths}, number=10)
+    s_ths = ths[:10]
+    t2 = timeit.timeit(stm, globals={'s_ths': s_ths}, number=10)
+    assert t1 / t2 < 10

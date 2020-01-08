@@ -106,8 +106,12 @@ class SQLiteFormatReader(AbstractReader):
         """
         if isinstance(traces, range) and (traces.start < 0 or traces.stop < 0):
             traces = range(self._size + traces.start, self._size + traces.stop, traces.step)
+
         traces = [i if i >= 0 else self._size + i for i in traces]
         traces = self._convert_traces_indices_to_db_indices(traces)
+
+        ordered_unique_ids = sorted(set(traces))
+        mask_needed = ordered_unique_ids != traces.tolist()
 
         ids = ','.join([str(t) for t in traces])
 
@@ -116,11 +120,13 @@ class SQLiteFormatReader(AbstractReader):
         FROM {self._samples_config.table_name} WHERE {self._samples_config.pk_column_name} in ({ids})
         '''
         data = _execute_query(self._connection, query, (), error_message='Error with samples configuration: ')
-        res = []
-        for index, t_i in enumerate(traces):
-            d = list(filter(lambda t: t[0] == t_i, data))[0]
-            res.append(_np.frombuffer(d[1], dtype=self.dtype))
-        res = _np.array(res)
+        res = _np.array([_np.frombuffer(d[1], dtype=self.dtype) for d in data])
+
+        if mask_needed:
+            mask = _np.zeros((len(traces), len(res)), dtype='uint8')
+            for i in range(len(traces)):
+                mask[i, ordered_unique_ids.index(traces[i])] = 1
+            res = mask.dot(res)
 
         if isinstance(frame, int):
             frame = slice(frame, frame + 1) if frame >= 0 else slice(res[0].shape[0] + frame, res[0].shape[0] + 1 + frame)
