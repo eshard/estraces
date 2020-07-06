@@ -76,7 +76,7 @@ class Samples:
         if isinstance(frame, int):
             frame = [frame]
         if isinstance(frame, range) and len(frame) == 0:
-            raise IndexError(f'indexing with length 0 range not allowed.')
+            raise IndexError('indexing with length 0 range not allowed.')
         if isinstance(frame, list):
             for f in frame:
                 if f >= self._samples_size:

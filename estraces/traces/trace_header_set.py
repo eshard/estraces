@@ -202,7 +202,8 @@ class TraceHeaderSet:
             if isinstance(key, tuple):
                 raise IndexError('too many indices for TraceHeaderSet.')
             raise IndexError(
-                f"only integers, slices (':'), 1 dimension numpy array and lists ([1, 10, 5]) are valid indices for TraceHeaderSet."
+                "only integers, slices (':'), 1 dimension numpy array and lists ([1, 10, 5]) are valid indices for "
+                "TraceHeaderSet."
             )
 
     def __iter__(self):

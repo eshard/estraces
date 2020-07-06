@@ -196,7 +196,7 @@ def write_sqlite3():
             cur = conn.cursor()
             cur.execute(insert, (i, DATAS[i], PLAINS[i], CIPHERS[i], INDICES[i], PLAINS[i]))
 
-        insert = f'INSERT INTO headers(id, tag, value, dtype) VALUES (?, ?, ?, ?)'
+        insert = 'INSERT INTO headers(id, tag, value, dtype) VALUES (?, ?, ?, ?)'
         i = 1
         for k, v in _HEADERS.items():
             cur = conn.cursor()
