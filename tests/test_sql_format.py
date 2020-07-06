@@ -43,7 +43,7 @@ def filename():
             cur = conn.cursor()
             cur.execute(insert, (i, DATAS[i], PLAINS[i], CIPHERS[i]))
 
-        insert = f'INSERT INTO headers(id, tag, value, dtype) VALUES (?, ?, ?, ?)'
+        insert = 'INSERT INTO headers(id, tag, value, dtype) VALUES (?, ?, ?, ?)'
         i = 1
         for k, v in _HEADERS.items():
             cur = conn.cursor()
