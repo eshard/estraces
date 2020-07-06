@@ -1,3 +1,7 @@
+from unittest.mock import patch
+
+from estraces.formats.ets_writer import _get_optimal_batch_size
+
 from .context import estraces  # noqa
 from .conftest import _HEADERS
 import numpy as np
@@ -584,3 +588,38 @@ def test_add_trace_header_set_with_headers(ets_filenames):
     assert ths.headers['foo'] == _HEADERS['foo']
     assert ths.headers['time'] == _HEADERS['time']
     assert ths.headers['bar'] == 'bar'
+
+
+def _get_virtual_memory_mock(v):
+    def virtual_memory_wrapped():
+        return 1, v
+    return virtual_memory_wrapped
+
+
+@patch("psutil.virtual_memory", side_effect=_get_virtual_memory_mock(20000000))
+def test_get_optimal_batch_size_with_size_lower_available_memory(virtual_memory_func):
+    ths = estraces.read_ths_from_ram(
+        np.random.randint(-55000, 55000, (nb_trace, nb_points), dtype='int32'),
+        headers=_HEADERS,
+        plaintext=np.random.randint(0, 256, (nb_trace, 16), dtype='uint8'),
+        ciphertext=np.random.randint(0, 256, (nb_trace, 16), dtype='uint8'),
+        chairs=np.array([f'chair{i}' for i in range(nb_trace)])
+    )
+
+    batch_size = _get_optimal_batch_size(ths)
+
+    assert batch_size > 1
+
+
+@patch("psutil.virtual_memory", side_effect=_get_virtual_memory_mock(1))
+def test_get_optimal_batch_size_with_size_higher_available_memory(virtual_memory_func):
+    ths = estraces.read_ths_from_ram(
+        np.random.randint(-55000, 55000, (nb_trace, nb_points), dtype='int32'),
+        headers=_HEADERS,
+        plaintext=np.random.randint(0, 256, (nb_trace, 16), dtype='uint8'),
+        ciphertext=np.random.randint(0, 256, (nb_trace, 16), dtype='uint8'),
+        chairs=np.array([f'chair{i}' for i in range(nb_trace)])
+    )
+
+    with pytest.raises(MemoryError):
+        _get_optimal_batch_size(ths)
