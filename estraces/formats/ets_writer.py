@@ -341,11 +341,14 @@ def compress_ets(filename, out_filename):
 
 def _get_optimal_batch_size(ths, available_memory_ratio=0.5):
     base_trace = ths[0]
-    base_size = len(ths) * base_trace.samples[:].nbytes
+    unit_size = base_trace.samples[:].nbytes
     for k, v in base_trace.metadatas.items():
         try:
-            base_size += len(ths) * v.nbytes
+            unit_size += v.nbytes
         except AttributeError:
             logger.info(f'Scalar metadata {k} not taken into account for optimal batch size computation.')
     available_mem = _ps.virtual_memory()[1]
-    return int(available_memory_ratio * available_mem / base_size)
+
+    if unit_size > available_mem:
+        raise MemoryError(f"Not enough memory to load one trace (Available memory : {available_mem} bytes)")
+    return int(available_memory_ratio * available_mem / unit_size)

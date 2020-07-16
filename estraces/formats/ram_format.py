@@ -38,7 +38,7 @@ class RAMReader(AbstractReader):
         if not isinstance(samples, np.ndarray):
             raise TypeError(f'`samples` argument must be a {np.ndarray}')
         if samples.ndim != 2:
-            raise TypeError(f'`samples` argument must be a 2-dimensions ndarray')
+            raise TypeError('`samples` argument must be a 2-dimensions ndarray')
         for key in kwargs_dict.keys():
             if not isinstance(kwargs_dict[key], np.ndarray):
                 raise TypeError(f'`{key}` argument must be a {np.ndarray}')

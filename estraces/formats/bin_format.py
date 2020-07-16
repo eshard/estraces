@@ -155,8 +155,8 @@ class BinFormat(AbstractReader):
                 self._trace_size = 0
             if _np.any(_np.diff(lens)):
                 raise ValueError(
-                    f'Not all traces are of the same length, and you are using no padding mode of BinFormat. \
-                        You should either fix you trace set files or use TRUNCATE or PAD padding mode.')
+                    "Not all traces are of the same length, and you are using no padding mode of BinFormat. "
+                    "You should either fix you trace set files or use TRUNCATE or PAD padding mode.")
         elif self._padding_mode == PaddingMode.TRUNCATE:
             self._trace_size = lens.min()
         elif self._padding_mode == PaddingMode.PAD:
