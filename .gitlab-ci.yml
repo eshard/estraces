@@ -38,15 +38,6 @@ test:python38:
     - conda activate env-python38
     - python setup.py test -v
 
-test:python39:
-  stage: test
-  script:
-    - eval "$(conda shell.bash hook)"
-    - conda create -n env-python39 python=3.9 psutil
-    - conda activate env-python39
-    - python setup.py test -v
-
-
 build:pypi:
   stage: build
   script:
