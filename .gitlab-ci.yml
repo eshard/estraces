@@ -17,6 +17,7 @@ lint:
 test:python36:
   stage: test
   script:
+    - eval "$(conda shell.bash hook)"
     - conda create -n env-python36 python=3.6 psutil
     - conda activate env-python36
     - python setup.py test -v
@@ -24,6 +25,7 @@ test:python36:
 test:python37:
   stage: test
   script:
+    - eval "$(conda shell.bash hook)"
     - conda create -n env-python37 python=3.7 psutil
     - conda activate env-python37
     - python setup.py test -v
@@ -31,6 +33,7 @@ test:python37:
 test:python38:
   stage: test
   script:
+    - eval "$(conda shell.bash hook)"
     - conda create -n env-python38 python=3.8 psutil
     - conda activate env-python38
     - python setup.py test -v
@@ -38,6 +41,7 @@ test:python38:
 test:python39:
   stage: test
   script:
+    - eval "$(conda shell.bash hook)"
     - conda create -n env-python39 python=3.9 psutil
     - conda activate env-python39
     - python setup.py test -v
