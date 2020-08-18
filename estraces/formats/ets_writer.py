@@ -274,7 +274,7 @@ class ETSWriter:
             data = tmp_data
 
         data_set[index: index + data.shape[0]] = data
-        data_set.flush()
+        self._h5_file.flush()
 
     def get_reader(self):
         """Returns a `TraceHeaderSet` instance from the current writer, and closes it."""
