@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.6.4 (2020-08-18)
+
+* maint: add CI tests for python 3.7 and 3.8 ([2cbf69e](https://gitlab.com/eshard/estraces/-/commit/2cbf69e))
+* fix: ETSWriter incorrect batch size ([638df97](https://gitlab.com/eshard/estraces/-/commit/638df97))
+* fix: ETSWriter flush file instead of dataset ([48e9053](https://gitlab.com/eshard/estraces/-/commit/48e9053))
+
 ## 1.6.3 (2020-01-08)
 
 * fix: optimize fetch samples method of sqlite reader ([c52d286](https://gitlab.com/eshard/estraces/commit/c52d286))
