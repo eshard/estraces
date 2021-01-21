@@ -2,6 +2,7 @@ from .context import estraces  # noqa: F401
 from estraces import read_ths_from_trs_file
 import pytest
 import numpy as np
+import cloudpickle
 
 
 TRS_FILENAME = 'tests/samples/aes128_sb_ciph_0fec9ca47fb2f2fd4df14dcb93aa4967.trs'
@@ -67,3 +68,14 @@ def test_trs_reader_optionnal_dtype_overrides_default():
 def test_trs_headers_provides_native_file_format_headers():
     ths = read_ths_from_trs_file(filename=TRS_FILENAME, metadatas_parsers={})
     assert dict(ths.headers) == {'title_space': 0, 'sample_coding': 1, 'length_data': 32, 'number_samples': 1920, 'number_traces': 500, 'trace_block': None}
+
+
+def test_serialization():
+    ths = read_ths_from_trs_file(TRS_FILENAME, dtype='float32',
+                                 metadatas_parsers=dict(plaintext=lambda x: np.frombuffer(x, dtype='uint8', offset=0, count=16),
+                                                        ciphertext=lambda x: np.frombuffer(x, dtype='uint8', offset=16)))
+    dumped = cloudpickle.dumps(ths)
+    loaded_ths = cloudpickle.loads(dumped)
+    assert np.array_equal(loaded_ths.samples[:], ths.samples[:])
+    assert np.array_equal(loaded_ths.plaintext[:], ths.plaintext[:])
+    assert np.array_equal(loaded_ths.ciphertext[:], ths.ciphertext[:])

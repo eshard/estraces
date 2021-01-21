@@ -177,3 +177,13 @@ class ETSFormatReader(AbstractReader):
 
     def __str__(self):
         return f'ETS format reader of file {self._filename} with {len(self)} traces.'
+
+    def __reduce__(self):
+        def deserialize(state):
+            new_obj = ETSFormatReader(state['_filename'])
+            new_obj.__dict__.update(state)
+            return new_obj
+
+        state = self.__dict__.copy()
+        del state['_file']
+        return deserialize, (state, )
