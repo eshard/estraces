@@ -288,6 +288,9 @@ class TraceHeaderSet:
         keys_to_keep = [idx for idx, trc in enumerate(self) if filter_function(trc)]
         return self[keys_to_keep]
 
+    def __reduce__(self):
+        return build_trace_header_set, (self._reader, self.name)
+
 
 def build_trace_header_set(reader: abstract_reader.AbstractReader, name: str) -> TraceHeaderSet:
     """Factory function which provides easy instantiation of :class:`TraceHeaderSet` instance.

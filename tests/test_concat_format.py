@@ -2,6 +2,7 @@ from .context import estraces # noqa
 import pytest
 from estraces.formats import concat_format, ets_format
 import numpy as np
+import cloudpickle
 
 
 path = 'tests/samples/test.ets'
@@ -129,3 +130,13 @@ def test_headers_can_be_overridden():
     assert ths.headers['spec'] == 1
     assert ths.headers['true'] == 2
     assert ths.headers['new_header'] == 'new'
+
+
+def test_serialization(concat1):
+    ths = concat1
+    dumped = cloudpickle.dumps(ths)
+    loaded_ths = cloudpickle.loads(dumped)
+    assert np.array_equal(loaded_ths.samples[:], ths.samples[:])
+    assert np.array_equal(loaded_ths.plaintext[:], ths.plaintext[:])
+    assert np.array_equal(loaded_ths.foo_bar[:], ths.foo_bar[:])
+    assert np.array_equal(loaded_ths.ciphertext[:], ths.ciphertext[:])

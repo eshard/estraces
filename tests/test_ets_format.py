@@ -7,6 +7,7 @@ import memory_profiler
 import h5py
 from estraces.formats import ets_format
 from pathlib import Path
+import cloudpickle
 
 path = 'tests/samples/test.ets'
 
@@ -229,3 +230,19 @@ def test_ets_with_name_and_id_metadata(ets_with_name):
     assert len(ets_with_name.id) == 1000
     assert ets_with_name.id[0] == 0
     assert ets_with_name[100].id == 100
+
+
+def test_headers():
+    ets = ets_format.read_ths_from_ets_file('tests/samples/test_with_headers.ets')
+    headers_dict = {'foo': 'bar', 'bar': 42, 'list': [1, 2, 3], 'ndarray': np.arange(5, dtype='int8')}
+    assert ets.headers == headers_dict
+
+
+def test_serialization(ets1):
+    ths = ets1
+    dumped = cloudpickle.dumps(ths)
+    loaded_ths = cloudpickle.loads(dumped)
+    assert np.array_equal(loaded_ths.samples[:], ths.samples[:])
+    assert np.array_equal(loaded_ths.plaintext[:], ths.plaintext[:])
+    assert np.array_equal(loaded_ths.foo_bar[:], ths.foo_bar[:])
+    assert np.array_equal(loaded_ths.ciphertext[:], ths.ciphertext[:])

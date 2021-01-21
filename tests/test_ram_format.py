@@ -2,6 +2,7 @@ from .context import estraces # noqa
 import pytest
 import numpy as np
 from estraces.formats import ets_format, ram_format
+import cloudpickle
 
 path = 'tests/samples/test.ets'
 
@@ -127,3 +128,13 @@ def test_split_preserves_length_consistency_of_sub_ths(ram1):
     for _, p in enumerate(parts):
         assert len(p) in (100, 56)
         assert len(p) == p.samples[:].shape[0]
+
+
+def test_serialization(ram1):
+    ths = ram1
+    dumped = cloudpickle.dumps(ths)
+    loaded_ths = cloudpickle.loads(dumped)
+    assert np.array_equal(loaded_ths.samples[:], ths.samples[:])
+    assert np.array_equal(loaded_ths.plaintext[:], ths.plaintext[:])
+    assert np.array_equal(loaded_ths.foo_bar[:], ths.foo_bar[:])
+    assert np.array_equal(loaded_ths.ciphertext[:], ths.ciphertext[:])
