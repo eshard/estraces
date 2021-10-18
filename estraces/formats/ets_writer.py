@@ -13,7 +13,7 @@ METADATA_GROUP_KEY = 'metadata'
 TRACES_DATASET_KEY = 'traces'
 
 
-class ETSWriterException(Exception):
+class ETSWriterError(Exception):
     pass
 
 
@@ -88,7 +88,7 @@ class ETSWriter:
         if not isinstance(trace_header_set, _ths.TraceHeaderSet):
             raise TypeError(f'trace header set is not a TraceHeaderSet instance but {type(trace_header_set)}.')
         if self._initialized_datasets and self._initialized_datasets != list(trace_header_set.metadatas.keys()):
-            raise ETSWriterException(
+            raise ETSWriterError(
                 f'trace header set instance has different metadata {trace_header_set.metadatas.keys()} than existing in file {self._initialized_datasets}.'
             )
 
@@ -107,7 +107,7 @@ class ETSWriter:
         if not isinstance(trace, _trace.Trace):
             raise TypeError(f'trace is not a Trace instance but {type(trace)}.')
         if self._initialized_datasets and self._initialized_datasets != list(trace.metadatas.keys()):
-            raise ETSWriterException(f'trace instance has different metadata {trace.metadatas.keys()} than existing in file {self._initialized_datasets}.')
+            raise ETSWriterError(f'trace instance has different metadata {trace.metadatas.keys()} than existing in file {self._initialized_datasets}.')
         self.add_samples(trace.samples)
         self.add_metadata(trace.metadatas)
 
@@ -260,7 +260,7 @@ class ETSWriter:
         if index is None:
             index = data_set.shape[0]
         if index < data_set.shape[0] and not self._overwrite:
-            raise ETSWriterException(
+            raise ETSWriterError(
                 f'An element already exists in {str(data_set.name)} dataset at index {index} and overwriting is disabled.')
         if index >= data_set.shape[0]:
             data_set.resize(index + data.shape[0], axis=0)
