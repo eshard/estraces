@@ -46,7 +46,7 @@ def test_ets_writer_raises_exception_if_trying_to_replace_existing_data_wo_overw
     out.write_samples(datas)
     out.close()
     out = ETSWriter(filename)
-    with pytest.raises(estraces.ETSWriterException):
+    with pytest.raises(estraces.ETSWriterError):
         out.write_samples(datas, index=0)
     out.close()
     out = ETSWriter(filename, overwrite=True)
@@ -385,7 +385,7 @@ def test_ets_writer_add_trace_raises_exception_if_metadata_are_inconsistent(ets_
         plaintext_2=plaintext_2,
         ciphertext=ciphertext
     )
-    with pytest.raises(estraces.ETSWriterException):
+    with pytest.raises(estraces.ETSWriterError):
         out.add_trace(ths[0])
 
 
@@ -444,7 +444,7 @@ def test_ets_writer_add_ths_raises_exception_if_metadata_are_inconsistent(ets_fi
         plaintext_2=plaintext_2,
         ciphertext=ciphertext
     )
-    with pytest.raises(estraces.ETSWriterException):
+    with pytest.raises(estraces.ETSWriterError):
         out.add_trace_header_set(ths)
 
 
