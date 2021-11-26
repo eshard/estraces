@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.7.0 (2021-11-26)
+
+* 361c9f0 renaming + trsfile version
+* 9794656 Resolve "[Distributed Computing] Serialize THS file format"
+
 ## 1.6.4 (2020-08-18)
 
 * maint: add CI tests for python 3.7 and 3.8 ([2cbf69e](https://gitlab.com/eshard/estraces/-/commit/2cbf69e))
