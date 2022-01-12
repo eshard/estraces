@@ -75,7 +75,12 @@ class TRSFormatReader(abstract_reader.AbstractReader):
             trace_index = self._convert_traces_indices_to_file_indices_array(trace_id)
             with _trsfile.open(self._filename, 'r') as trs_file:
                 raw_trace = trs_file[trace_index]
-                res = self._metadatas_parsers[key](raw_trace.data)
+                # .data in <=0.3.2 version is not available in TRS V2 pacakge
+                # We need to use .parameters.serialize() now
+                try:
+                    res = self._metadatas_parsers[key](raw_trace.parameters.serialize())
+                except AttributeError:
+                    res = self._metadatas_parsers[key](raw_trace.data)
         else:
             if self._sub_traceset_indices is not None:
                 indices = [i for i in self._sub_traceset_indices]
@@ -83,7 +88,10 @@ class TRSFormatReader(abstract_reader.AbstractReader):
                 indices = [i for i in range(len(self))]
 
             with _trsfile.open(self._filename, 'r') as trs_file:
-                res = _np.array([self._metadatas_parsers[key](trs_file[i].data) for i in indices])
+                try:
+                    res = _np.array([self._metadatas_parsers[key](trs_file[i].parameters.serialize()) for i in indices])
+                except AttributeError:
+                    res = _np.array([self._metadatas_parsers[key](trs_file[i].data) for i in indices])
         return res
 
     def __getitem__(self, key):

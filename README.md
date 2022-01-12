@@ -16,7 +16,9 @@ side-channel analysis framework.
 
 ### Requirements and installation
 
-estraces requires and must work on Python **3.6**, **3.7** and **3.8** versions.
+estraces requires and must work on Python **3.6**, **3.7**, **3.8**, **3.9** versions.
+
+Python 3.6 is outdated now [EOL date](https://endoflife.date/python)
 
 You can install it by several ways:
 
@@ -47,7 +49,7 @@ First, you should update your `pip` and `setuptools` version:
 pip install -U pip setuptools
 ```
 
-If you use **Python 3.8**, you must first build and install `h5py`, [see instructions](https://h5py.readthedocs.io/en/latest/build.html#source-installation).
+If you use **Python 3.8** or above, you must first build and install `h5py`, [see instructions](https://h5py.readthedocs.io/en/latest/build.html#source-installation).
 
 ```bash
 pip install estraces
