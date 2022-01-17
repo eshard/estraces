@@ -20,6 +20,7 @@ def read_ths_from_random(nb_traces: int,
         dtype (str): default value is 'int8'
         seed : seed to use for `_np.random.seed(seed)`
         **kwargs (ndarray): metadata as ndarray, for example, plaintext=(16, 'uint8')
+
     """
     return _build_trace_header_set(reader=RandomReader(nb_traces=nb_traces,
                                                        trace_length=trace_length,
@@ -45,6 +46,7 @@ class RandomReader(_AbstractReader):
         dtype (str): default value is 'int8'
         seed : seed to use for `_np.random.seed(seed)`
         **kwargs (ndarray): metadata as ndarray, for example plaintext=(16, 'uint8')
+
     """
 
     def __init__(self,
@@ -121,7 +123,7 @@ class RandomReader(_AbstractReader):
     def __getitem__(self, key):
         nb_traces = self._key_length(key)
         nb_traces = nb_traces if nb_traces is not None else self.nb_traces
-        return RandomReader(nb_traces, self.trace_length, self.interval, self.dtype, None, **self._metadatas)
+        return RandomReader(nb_traces, self.trace_length, self.interval, self.dtype, None, self._headers, **self._metadatas)
 
     def get_trace_size(self, trace_id=None):
         return self.trace_length
@@ -131,7 +133,7 @@ class RandomReader(_AbstractReader):
 
     @property
     def headers_keys(self):
-        self._headers.keys()
+        return self._headers.keys()
 
     def __str__(self):
         return self.__repr__()
