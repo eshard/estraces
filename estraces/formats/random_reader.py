@@ -68,8 +68,13 @@ class RandomReader(_AbstractReader):
         self._metadatas = kwargs
 
     def _generate_data(self, shape, dtype):
-        data = _np.random.rand(*shape)
-        data = data * (self.interval[1] - self.interval[0]) + self.interval[0]
+        if dtype == _np.dtype('float64'):
+            x, y = _np.random.rand(shape[0]) * 2 - 1, _np.random.rand(shape[1]) * 2 - 1
+        else:
+            x, y = _np.random.rand(shape[0]).astype('float32') * 2 - 1, _np.random.rand(shape[1]).astype('float32') * 2 - 1
+        data = _np.outer(x, y)
+        a, b = self.interval
+        data = data * ((b - a) / 2) + (b - (b - a) / 2)
         return data.astype(dtype)
 
     def _check_dtype_and_interval(self):
@@ -85,11 +90,12 @@ class RandomReader(_AbstractReader):
             raise ValueError(f'Given maximum value ({self.interval[1]}) is greater than the maximum of the type {self.dtype}: {infos.max}.')
 
     def _slice_length(self, frame):
-        if frame.stop is None:
-            return None
         start = frame.start if frame.start is not None else 0
         step = frame.step if frame.step is not None else 1
-        return abs(frame.stop - start) // abs(step)
+        stop = frame.stop
+        if stop is None or stop > self.nb_traces:
+            stop = self.nb_traces
+        return abs(stop - start) // abs(step)
 
     def _key_length(self, key):
         if isinstance(key, (slice, range)):
