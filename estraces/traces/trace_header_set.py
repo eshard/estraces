@@ -132,9 +132,10 @@ class TraceHeaderSet:
         self._is_initialized = True
 
     def __str__(self):
+        self_part = self[:3]
         r = f'Trace Header Set:\n{"Name":.<17}: {self.name}\n{"Reader":.<17}: {self._reader}\n'
         for k in self.metadatas.keys():
-            r += f'{k:.<17}: {self.metadatas.get(k).dtype}\n'
+            r += f'{k:.<17}: {self_part.metadatas.get(k).dtype}\n'
         return r
 
     def __repr__(self):
