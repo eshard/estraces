@@ -2,6 +2,7 @@ from .context import estraces  # noqa
 import pytest
 import numpy as np
 from estraces.formats import random_reader
+import cloudpickle
 
 
 SMALL_SIZE = 10
@@ -104,6 +105,29 @@ def test_new_rand(rand):
     assert not np.array_equal(rand.samples[:], rand2.samples[:])
 
 
+def test_indexing():
+    rand = random_reader.read_ths_from_random(100, 1000, plaintext=(16, 'uint8'))
+    assert len(rand[[3, 4, 5]]) == 3
+    assert len(rand[np.array([10, 20, 15])]) == 3
+    assert len(rand[10:20]) == 10
+    assert len(rand[10:20:2]) == 5
+    assert len(rand[90:]) == 10
+    assert len(rand[:10]) == 10
+    assert len(rand[:]) == 100
+
+
+def test_multiple_indexing():
+    rand = random_reader.read_ths_from_random(100, 1000, plaintext=(16, 'uint8'))
+    sub1 = rand[:50]
+    sub2 = sub1[40:60]
+    assert len(sub1) == 50
+    assert len(sub2) == 10
+    assert sub1.samples[:].shape == (50, 1000)
+    assert sub1.plaintext[:].shape == (50, 16)
+    assert sub2.samples[:].shape == (10, 1000)
+    assert sub2.plaintext[:].shape == (10, 16)
+
+
 SEED = 101
 
 
@@ -112,3 +136,13 @@ def test_fixed_seed(rand):
     sample1 = rand.samples[:]
     rand2 = random_reader.read_ths_from_random(nb_traces=2, trace_length=2, seed=SEED)
     assert np.array_equal(sample1, rand2.samples[:])
+
+
+def test_serialization():
+    ths = random_reader.read_ths_from_random(100, 1000, plaintext=(16, 'uint8'))
+    dumped = cloudpickle.dumps(ths)
+    loaded_ths = cloudpickle.loads(dumped)
+    assert loaded_ths.samples[:].shape == ths.samples[:].shape
+    assert loaded_ths.samples[:].dtype == ths.samples[:].dtype
+    assert loaded_ths.plaintext[:].shape == ths.plaintext[:].shape
+    assert loaded_ths.plaintext[:].dtype == ths.plaintext[:].dtype

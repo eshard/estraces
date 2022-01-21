@@ -85,11 +85,12 @@ class RandomReader(_AbstractReader):
             raise ValueError(f'Given maximum value ({self.interval[1]}) is greater than the maximum of the type {self.dtype}: {infos.max}.')
 
     def _slice_length(self, frame):
-        if frame.stop is None:
-            return None
         start = frame.start if frame.start is not None else 0
         step = frame.step if frame.step is not None else 1
-        return abs(frame.stop - start) // abs(step)
+        stop = frame.stop
+        if stop is None or stop > self.nb_traces:
+            stop = self.nb_traces
+        return abs(stop - start) // abs(step)
 
     def _key_length(self, key):
         if isinstance(key, (slice, range)):
