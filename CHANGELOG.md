@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.7.1 (2022-01-25)
+
+* Add random reader
+* Fix minor issue on perf
+
 ## 1.7.0 (2021-11-26)
 
 * 361c9f0 renaming + trsfile version
