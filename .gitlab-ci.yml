@@ -43,7 +43,7 @@ test:python39:
   script:
     - eval "$(conda shell.bash hook)"
     - conda create -n env-python39 python=3.9 psutil
-    - apt-get update -y && apt-get install -y --force-yes pkg-config libhdf5-100 libhdf5-dev gcc && rm -rf /var/lib/apt/lists/*
+    - apt-get update -y && apt-get install -y --force-yes pkg-config libhdf5-103 libhdf5-dev gcc && rm -rf /var/lib/apt/lists/*
     - conda activate env-python39
     - python setup.py test -v
 
