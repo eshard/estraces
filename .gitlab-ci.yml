@@ -1,4 +1,4 @@
-image: conda/miniconda3
+image: continuumio/miniconda3
 
 stages:
   - lint
