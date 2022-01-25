@@ -18,7 +18,7 @@ copyright = '2019, eshard'
 author = 'eshard team'
 
 version = '1.7'
-release = '1.7.0'
+release = '1.7.1'
 
 
 # -- General configuration ---------------------------------------------------
