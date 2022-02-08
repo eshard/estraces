@@ -89,26 +89,24 @@ class RandomReader(_AbstractReader):
         if self.interval[1] - 1 > infos.max:
             raise ValueError(f'Given maximum value ({self.interval[1]}) is greater than the maximum of the type {self.dtype}: {infos.max}.')
 
-    def _slice_length(self, frame):
+    def _slice_length(self, frame, reference_length):
         start = frame.start if frame.start is not None else 0
         step = frame.step if frame.step is not None else 1
         stop = frame.stop
-        if stop is None or stop > self.nb_traces:
-            stop = self.nb_traces
+        if stop is None or stop > reference_length:
+            stop = reference_length
         return abs(stop - start) // abs(step)
 
-    def _key_length(self, key):
+    def _key_length(self, key, reference_length):
         if isinstance(key, (slice, range)):
-            return self._slice_length(key)
+            return self._slice_length(key, reference_length)
         if key is Ellipsis:
-            return None
+            return reference_length
         return len(key)
 
     def fetch_samples(self, traces=slice(None), frame=slice(None)):
-        nb_traces = self._key_length(traces)
-        nb_traces = nb_traces if nb_traces is not None else self.nb_traces
-        trace_length = self._key_length(frame)
-        trace_length = trace_length if trace_length is not None else self.trace_length
+        nb_traces = self._key_length(traces, self.nb_traces)
+        trace_length = self._key_length(frame, self.trace_length)
         return self._generate_data((nb_traces, trace_length), self.dtype)
 
     def fetch_metadatas(self, key, trace_id=None):
@@ -127,8 +125,7 @@ class RandomReader(_AbstractReader):
         return self.nb_traces
 
     def __getitem__(self, key):
-        nb_traces = self._key_length(key)
-        nb_traces = nb_traces if nb_traces is not None else self.nb_traces
+        nb_traces = self._key_length(key, self.nb_traces)
         return RandomReader(nb_traces, self.trace_length, self.interval, self.dtype, None, self._headers, **self._metadatas)
 
     def get_trace_size(self, trace_id=None):
