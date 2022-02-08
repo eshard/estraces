@@ -116,6 +116,16 @@ def test_indexing():
     assert len(rand[:]) == 100
 
 
+def test_indexing_2():
+    rand = random_reader.read_ths_from_random(100, 1000, plaintext=(16, 'uint8'))
+    assert rand._reader.fetch_samples(slice(None), slice(None)).shape == (100, 1000)
+    assert rand[0:2].samples[:].shape == (2, 1000)
+    assert rand[0:2].samples[:, ::2].shape == (2, 500)
+    assert rand[0:2].samples[:, 100:].shape == (2, 900)
+    assert rand.samples[:2, 100:].shape == (2, 900)
+    assert rand[0:2].samples[:, 100:200].shape == (2, 100)
+
+
 def test_multiple_indexing():
     rand = random_reader.read_ths_from_random(100, 1000, plaintext=(16, 'uint8'))
     sub1 = rand[:50]
