@@ -50,7 +50,7 @@ test:python39:
 build:pypi:
   stage: build
   script:
-    - conda install python=3.6
+    - conda install python=3.7
     - pip install -U pip setuptools wheel
     - python setup.py sdist bdist_wheel
   only:
