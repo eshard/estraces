@@ -246,3 +246,14 @@ def test_serialization(ets1):
     assert np.array_equal(loaded_ths.plaintext[:], ths.plaintext[:])
     assert np.array_equal(loaded_ths.foo_bar[:], ths.foo_bar[:])
     assert np.array_equal(loaded_ths.ciphertext[:], ths.ciphertext[:])
+
+
+@pytest.mark.parametrize('ets_file', ['tests/samples/test_old.ets', 'tests/samples/test_new.ets'])
+def test_read_with_strings(ets_file):
+    ets = ets_format.read_ths_from_ets_file(ets_file)
+    for metadata_name in ['string', 'variable_length_string', 'ascii_bytes', 'variable_length_ascii_bytes']:
+        print(metadata_name, end=' ')
+        metadata = getattr(ets, metadata_name)
+        for value in metadata:
+            assert isinstance(value, str)
+        print('is of type ', type(value))
