@@ -30,8 +30,11 @@ _METADATAS_KEY = 'metadata'
 def _cast_to_str(val):
     # h5py doesn't manage nicely strings values. We must cast these explicitly before returning to the user.
     if isinstance(val, np.ndarray):
-        if 'S' in str(val.dtype):
-            return np.array([r.decode() for r in val])
+        if 'S' in str(val.dtype) or 'object' == str(val.dtype):
+            try:
+                return np.array([r.decode() for r in val])
+            except AttributeError:
+                return val
     if isinstance(val, bytes):
         return val.decode()
     return val
