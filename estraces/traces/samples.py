@@ -89,7 +89,7 @@ class Samples:
     def _check_indices_type(self, indices):
         inds = indices if isinstance(indices, tuple) else (indices, )
         if isinstance(indices, tuple) and len(indices) > self.ndim:
-            raise IndexError(f'Samples suport at most {self.ndim} dimensions.')
+            raise IndexError(f'Samples support at most {self.ndim} dimensions. Perhase try using samples this way: trace.samples[:]')
         for index in inds:
             self._check_index_type(index=index)
 
