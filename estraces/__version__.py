@@ -1,4 +1,4 @@
-VERSION = (1, 7, 0)
+VERSION = (1, 8, 0)
 
 __version__ = ".".join(map(str, VERSION))
 __author__ = "eshard"
