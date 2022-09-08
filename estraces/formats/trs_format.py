@@ -72,7 +72,7 @@ class TRSFormatReader(abstract_reader.AbstractReader):
 
     def fetch_metadatas(self, key, trace_id):
         if trace_id is not None:
-            trace_index = self._convert_traces_indices_to_file_indices_array(trace_id)
+            trace_index = self._convert_traces_indices_to_file_indices_array(trace_id).squeeze()
             with _trsfile.open(self._filename, 'r') as trs_file:
                 raw_trace = trs_file[trace_index]
                 # .data in <=0.3.2 version is not available in TRS V2 pacakge
@@ -127,6 +127,8 @@ class TRSFormatReader(abstract_reader.AbstractReader):
         return self._internal_headers[_trsfile.Header.NUMBER_SAMPLES]
 
     def _convert_traces_indices_to_file_indices_array(self, traces):
+        if isinstance(traces, int):
+            traces = [traces]
         if self._sub_traceset_indices is not None:
             sub_max = len(self._sub_traceset_indices)
             traces_index = [t for t in traces if t < sub_max]
