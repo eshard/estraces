@@ -69,14 +69,28 @@ TRS_FILENAME = f'{PATH}{FN}.trs'
 
 def write_trs_file():
     with trsfile.open(TRS_FILENAME, 'w', live_update=1, padding_mode=trsfile.TracePadding.AUTO) as trs:
-        trs.extend([
-            trsfile.Trace(
-                trsfile.SampleCoding.SHORT,
-                DATAS[i],
-                data=bytes(CIPHERS[i].tolist() + PLAINS[i].tolist()) + INDICES[i].encode('utf8'),
-                title=f'The {i}th trace'
-            ) for i in range(len(DATAS))]
-        )
+        # Code for trsfile 0.3.2 version
+        try:
+            trs.extend([
+                trsfile.Trace(
+                    trsfile.SampleCoding.SHORT,
+                    DATAS[i],
+                    data=bytes(CIPHERS[i].tolist() + PLAINS[i].tolist()) + INDICES[i].encode('utf8'),
+                    title=f'The {i}th trace'
+                ) for i in range(len(DATAS))])
+        except TypeError:
+            # Code for trsfile 2.1.0 version
+            from trsfile.parametermap import TraceParameterMap
+            from trsfile.traceparameter import ByteArrayParameter, StringParameter
+            trs.extend([
+                trsfile.Trace(
+                    trsfile.SampleCoding.SHORT,
+                    DATAS[i],
+                    parameters=TraceParameterMap({'ciphertext': ByteArrayParameter(CIPHERS[i].tolist()),
+                                                  'plaintext': ByteArrayParameter(PLAINS[i].tolist()),
+                                                  'indice': StringParameter(str(INDICES[i]))}),
+                    title=f'The {i}th trace'
+                ) for i in range(len(DATAS))])
 
 
 def bin_format_reader(request):

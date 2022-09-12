@@ -3,9 +3,10 @@ from estraces import read_ths_from_trs_file
 import pytest
 import numpy as np
 import cloudpickle
+import trsfile
 
 
-TRS_FILENAME = 'tests/samples/aes128_sb_ciph_0fec9ca47fb2f2fd4df14dcb93aa4967.trs'
+TRS_FILENAME = 'tests/samples/aes128_sb_ciph_0fec9ca47fb2f2fd4df14dcb93aa4967.trs'  # TRS V1 file
 
 PLAINTEXTS_10 = np.array([[111, 111, 0, 202, 89, 18, 30, 159, 41, 95, 134, 24, 243, 193, 171, 27],
                           [212, 44, 106, 221, 40, 124, 241, 26, 4, 129, 240, 57, 201, 59, 120, 84],
@@ -127,3 +128,40 @@ def test_double_indexing_by_integer(trs):
     assert np.array_equal(sub_trs[3].plaintext, PLAINTEXTS_10[3])
     sub_trs = trs[[1, 3, 5, 7, 9, 11]]
     assert np.array_equal(sub_trs[3].plaintext, PLAINTEXTS_10[7])
+
+
+@pytest.mark.skipif(trsfile.__version__ == '0.3.2', reason="Test only for trsfile v2.")
+def test_read_trs_v2_file():
+    filename = 'tests/samples/test_without_parser.trs'
+    trs = read_ths_from_trs_file(filename, dtype='float32',
+                                 metadatas_parsers=dict(plaintext=lambda x: np.frombuffer(x, dtype='uint8', offset=0, count=16),
+                                                        ciphertext=lambda x: np.frombuffer(x, dtype='uint8', offset=16, count=16)))
+    ref = {'title_space': 255, 'sample_coding': 2, 'length_data': 34, 'number_samples': 33, 'number_traces': 10, 'trace_block': None}
+    for key, value in ref.items():
+        print(key)
+        assert trs.headers[key] == value
+    assert trs[:3].samples[:].shape == (3, 33)
+    assert trs[:3].ciphertext[:].shape == (3, 16)
+    assert trs[:3].plaintext[:].shape == (3, 16)
+
+
+@pytest.mark.skipif(trsfile.__version__ == '0.3.2', reason="Test only for trsfile v2.")
+def test_trs_without_metadata_parser():
+    filename = 'tests/samples/test_without_parser.trs'
+    trs = read_ths_from_trs_file(filename, dtype='float32', metadatas_parsers=None)
+    assert trs[:3].samples[:].shape == (3, 33)
+    assert trs[:3].ciphertext[:].shape == (3, 16)
+    assert trs[:3].plaintext[:].shape == (3, 16)
+    assert trs[:3].indice[:].shape == (3, 1)
+
+
+@pytest.mark.skipif(trsfile.__version__ == '0.3.2', reason="Test only for trsfile v2.")
+def test_trsv1_without_metadata_parser_raises():
+    with pytest.raises(TypeError, match='The TRS file does not have a TRACE_PARAMETER_DEFINITIONS field. You must set the'):
+        read_ths_from_trs_file(TRS_FILENAME, dtype='float32', metadatas_parsers=None)
+
+
+@pytest.mark.skipif(trsfile.__version__ != '0.3.2', reason="Test only for trsfile v1.")
+def test_old_trsfile_version_without_metadata_parser_raises():
+    with pytest.raises(TypeError, match='Setting a TRS reader with `metadatas_parsers=None` allowed only '):
+        read_ths_from_trs_file(TRS_FILENAME, dtype='float32', metadatas_parsers=None)

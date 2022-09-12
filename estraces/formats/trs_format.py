@@ -2,6 +2,11 @@ from ..traces import abstract_reader
 from ..traces.trace_header_set import build_trace_header_set
 import numpy as _np
 import trsfile as _trsfile
+try:
+    from trsfile.traceparameter import ParameterType as _ParameterType
+    TRS_V2 = True
+except ModuleNotFoundError:
+    TRS_V2 = False
 
 
 def read_ths_from_trs_file(filename, metadatas_parsers, dtype=None):
@@ -11,6 +16,7 @@ def read_ths_from_trs_file(filename, metadatas_parsers, dtype=None):
         filename (str): TRS filename
         metadatas_parsers (dict): dict with a key for each metadata of the trace set,
             with value a function or lambda taking `data` as input and returning the metadata value parsed from it.
+            For TRS V2 files, the `metadata_parsers` argument can be None. In this case, it is built with the TRACE_PARAMETER_DEFINITIONS header.
         dtype (dtype, optionnal): a Numpy dtype that will override the TRS samples data type
 
     Returns:
@@ -46,8 +52,32 @@ class TRSFormatReader(abstract_reader.AbstractReader):
                 self._size = self._internal_headers[_trsfile.Header.NUMBER_TRACES]
         except (FileNotFoundError, ValueError, NotImplementedError) as e:
             raise AttributeError(f"{filename} is not a valid TRS file or filename. Original exception was:{e}.")
+        metadatas_parsers = metadatas_parsers if metadatas_parsers is not None else self._metadatas_parsers_from_trace_parameter_definitions()
         self._set_metadatas_parsers(metadatas_parsers)
         self.dtype = _np.dtype(dtype) if dtype else self._internal_headers[_trsfile.Header.SAMPLE_CODING].format
+
+    def _metadatas_parsers_from_trace_parameter_definitions(self):
+        if not TRS_V2:
+            raise TypeError('Setting a TRS reader with `metadatas_parsers=None` allowed only for `pyton > 3.6` and `trsfile > 0.3.2`.')
+        try:
+            param_definitions = self._headers['trace_parameter_definitions']
+        except KeyError:
+            raise TypeError('The TRS file does not have a TRACE_PARAMETER_DEFINITIONS field. You must set the `metadatas_parsers` argument.')
+        metadatas_parsers = {}
+        for key, param_def in param_definitions.items():
+            metadatas_parsers[key] = self._generate_lambda_from_parameter_definition(param_def)
+        return metadatas_parsers
+
+    @staticmethod
+    def _generate_lambda_from_parameter_definition(param_def):
+        offset = param_def.offset
+        length = param_def.length
+        if param_def.param_type == _ParameterType.STRING:
+            return lambda x: _np.array([x[offset:offset + length].decode()])
+        dtype = {_ParameterType.BOOL: _np.dtype('bool'), _ParameterType.BYTE: _np.uint8,
+                 _ParameterType.DOUBLE: _np.float64, _ParameterType.FLOAT: _np.float32,
+                 _ParameterType.INT: _np.int32, _ParameterType.LONG: _np.int64, _ParameterType.SHORT: _np.int16}[param_def.param_type]
+        return lambda x: _np.frombuffer(x, dtype=dtype, offset=0, count=16)
 
     def _set_metadatas_parsers(self, metadatas_parsers):
         self._metadatas_parsers = metadatas_parsers
