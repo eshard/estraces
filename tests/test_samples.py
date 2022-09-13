@@ -228,16 +228,17 @@ def test_samples_slicing_with_negative_range(s1d, s2d):
     assert [] == s2d[range(-1, -2), :].tolist()
 
 
-def test_samples_is_compatible_with_array_interface(s1d, s2d):
+def test_samples_implements_array_interface(s1d, s2d):
     # See issue https://gitlab.eshard.int/esdynamic/estraces/issues/35
-    s1d.array
-    s2d.array
     assert s1d.__array_interface__ is not None
     assert s2d.__array_interface__ is not None
     assert s1d.__array_struct__ is not None
     assert s2d.__array_struct__ is not None
     assert isinstance(s1d.__array_interface__, type(s1d[:].__array_interface__)) is not None
     assert isinstance(s2d.__array_interface__, type(s2d[:].__array_interface__)) is not None
+
+
+def test_samples_is_castable_to_numpy(s1d, s2d):
     assert np.array_equal(
         np.array(s1d),
         s1d[:]
@@ -248,13 +249,13 @@ def test_samples_is_compatible_with_array_interface(s1d, s2d):
     )
 
 
-def test_samples_instantiate_array_interface_in_last_resort(s1d, s2d):
+def test_samples_instantiate_array_data_in_last_resort(s1d, s2d):
     # See issue https://gitlab.eshard.int/esdynamic/estraces/issues/52
-    assert s2d.__array_interface__ is None
+    assert s2d._array is None
     s2d[0]
-    assert s2d.__array_interface__ is None
+    assert s2d._array is None
     s2d.array
-    assert s2d.__array_interface__ is not None
+    assert s2d._array is not None
 
 
 def test_samples_support_boolean_indexing(samples):
@@ -269,3 +270,33 @@ def test_samples_support_boolean_indexing_2d(s2d):
     assert s2d[:, boolean].shape[1] == 2
     assert np.array_equal(s2d[:, 0], s2d[:, boolean][:, 0])
     assert np.array_equal(s2d[:, -1], s2d[:, boolean][:, 1])
+
+
+def test_samples_shape_does_not_load_data(s1d, s2d):
+    shape = s1d.shape
+    assert s1d._array is None
+    assert shape == s1d.array.shape
+
+    shape = s2d.shape
+    assert s2d._array is None
+    assert shape == s2d.array.shape
+
+
+def test_samples_dtype_does_not_load_data(s1d, s2d):
+    dtype = s1d.dtype
+    assert s1d._array is None
+    assert dtype == s1d.array.dtype
+
+    dtype = s2d.dtype
+    assert s2d._array is None
+    assert dtype == s2d.array.dtype
+
+
+def test_samples_size_does_not_load_data(s1d, s2d):
+    size = s1d.size
+    assert s1d._array is None
+    assert size == s1d.array.size
+
+    size = s2d.size
+    assert s2d._array is None
+    assert size == s2d.array.size

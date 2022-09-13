@@ -127,7 +127,7 @@ class ETSWriter:
             for i in range(0, len(samples), batch_size):
                 self.write_samples(samples[i: i + batch_size])
         else:
-            self.write_samples(samples.array)
+            self.write_samples(samples[:])
 
     def add_metadata(self, metadata: _metadata.Metadatas, batch_size=1):
         """Append provided metadata to the end of ETS.

@@ -25,9 +25,7 @@ class Samples:
         self._trace_id = trace_id
         self._reader = reader
         self._set_ndim()
-        # See issue https://gitlab.eshard.int/esdynamic/estraces/issues/35
-        self.__array_interface__ = None
-        self.__array_struct__ = None
+        self._array = None
 
     def __getattr__(self, name):
         arr = self.array
@@ -49,7 +47,7 @@ class Samples:
             return len(self._reader)
 
     def _set_ndim(self):
-        self.ndim = 1 if self._trace_id is not None else 2
+        self.ndim = 1 if self._trace_id is not None else 2 * (len(self._reader) > 0)
 
     def __getitem__(self, key):
         self._check_indices_type(key)
@@ -84,7 +82,7 @@ class Samples:
 
     @property
     def _samples_axis(self):
-        return 0 if self.ndim == 1 else 1
+        return 0 if self.ndim < 2 else 1
 
     def _check_indices_type(self, indices):
         inds = indices if isinstance(indices, tuple) else (indices, )
@@ -137,17 +135,43 @@ class Samples:
 
     @property
     def _samples_size(self):
-        if self.ndim == 1:
+        if self.ndim == 0:
+            return None
+        elif self.ndim == 1:
             return len(self)
         else:
             return len(self[0])
 
     @property
+    def shape(self):
+        return (
+            (0,),
+            (self._samples_size, ),
+            (len(self), self._samples_size)
+        )[self.ndim]
+
+    @property
+    def dtype(self):
+        if self._array is not None:
+            return self._array.dtype
+        return self[0].dtype
+
+    @property
+    def size(self):
+        return _np.prod(self.shape)
+
+    @property
     def array(self):
         # See issue https://gitlab.eshard.int/esdynamic/estraces/issues/35
         # Having these attributes ensure that numpy.array constructor correctly instantiate array given a Samples instance.
-        res = self[:]
-        if self.__array_interface__ is None:
-            self.__array_struct__ = res.__array_struct__
-            self.__array_interface__ = res.__array_interface__
-        return res
+        if self._array is None:
+            self._array = self[:]
+        return self._array
+
+    @property
+    def __array_struct__(self):
+        return self.self.array.__array_struct__
+
+    @property
+    def __array_interface__(self):
+        return self.array.__array_interface__
