@@ -140,3 +140,11 @@ def test_serialization(concat1):
     assert np.array_equal(loaded_ths.plaintext[:], ths.plaintext[:])
     assert np.array_equal(loaded_ths.foo_bar[:], ths.foo_bar[:])
     assert np.array_equal(loaded_ths.ciphertext[:], ths.ciphertext[:])
+
+
+def test_concat_keeps_order():
+    ths_list = [estraces.read_ths_from_ram(np.random.randint(0, 255, (100, 120), dtype='uint8')) for i in range(10)]
+
+    ths = concat_format.read_ths_from_multiple_ths(*ths_list)
+    for i in range(10):
+        assert np.array_equal(ths_list[i].samples[:], ths.samples[i * 100:(i + 1) * 100]), 'Concatenation does not guarantee order.'
