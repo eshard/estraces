@@ -1,8 +1,9 @@
-import numpy as np
+from functools import lru_cache
 
 from ..traces.abstract_reader import AbstractReader
 from ..traces.trace_header_set import build_trace_header_set
 import estraces
+
 import numpy as _np
 
 
@@ -33,12 +34,17 @@ class ConcatFormatReader(AbstractReader):
     def __init__(self, *args, **kwargs):
 
         headers = kwargs.pop('headers', {})
+        check = kwargs.pop('check', True)
         all_args = dict(**{f'ths_{i}': arg for i, arg in enumerate(args)}, **kwargs)
-        self._check_are_trace_header_sets(all_args)
-        self._check_metadata_consistency(all_args)
-        self._check_sample_shapes_and_dtype_consistency(all_args)
-        self._check_metadata_shapes_and_dtype_consistency(all_args)
-        self._headers = self._check_headers(all_args, headers)
+
+        if check:
+            self._check_are_trace_header_sets(all_args)
+            self._check_metadata_consistency(all_args)
+            self._check_sample_shapes_and_dtype_consistency(all_args)
+            self._check_metadata_shapes_and_dtype_consistency(all_args)
+            self._headers = self._check_headers(all_args, headers)
+        else:
+            self._headers = headers
 
         self.ths_list = list(all_args.values())
         self._ths_dict = all_args
@@ -49,7 +55,7 @@ class ConcatFormatReader(AbstractReader):
         self._sizes = [len(ths) for ths in self.ths_list]
         self._size = _np.sum(self._sizes)
 
-        self._sub_traceset_indices = _np.arange(self._size)
+        self._sub_traceset_indices = _cached_arange(self._size)
 
     @staticmethod
     def _check_are_trace_header_sets(thss_dict):
@@ -155,7 +161,7 @@ class ConcatFormatReader(AbstractReader):
         original_traces_indices = self._sub_traceset_indices[traces_indices]
         cumsizes = _np.cumsum(self._sizes)
         sets = _np.searchsorted(cumsizes, original_traces_indices, side='right')
-        indices_per_set = [np.where(sets == i)[0] for i in range(len(self._sizes))]
+        indices_per_set = [_np.where(sets == i)[0] for i in range(len(self._sizes))]
         original_traces_indices_per_set = [original_traces_indices[indices] - offset for indices, offset in zip(indices_per_set, _np.concatenate(([0], cumsizes)))] # noqa
         return original_traces_indices_per_set, indices_per_set, len(original_traces_indices)
 
@@ -170,7 +176,7 @@ class ConcatFormatReader(AbstractReader):
         original_traces_indices_per_set, indices_per_set, length = self._convert_traces_indices_to_list_of_raw_traces_indices_per_set(trace_id)
         shape = (length, self._metas_infos[key]['length'])
         shape = (shape[0], ) if shape[1] == 0 else shape
-        rez = np.empty(shape=shape, dtype=self._metas_infos[key]['dtype'])
+        rez = _np.empty(shape=shape, dtype=self._metas_infos[key]['dtype'])
         for indices, result_indices, ths in zip(original_traces_indices_per_set, indices_per_set, self.ths_list):
             if len(indices):
                 data = ths.metadatas[key][indices]
@@ -196,7 +202,7 @@ class ConcatFormatReader(AbstractReader):
                 frame = slice(frame, frame + 1)
 
         original_traces_indices_per_set, indices_per_set, length = self._convert_traces_indices_to_list_of_raw_traces_indices_per_set(traces)
-        rez = np.empty(shape=(length, self._trace_size), dtype=self._trace_dtype)
+        rez = _np.empty(shape=(length, self._trace_size), dtype=self._trace_dtype)
         rez = rez[:, frame]
         for indices, result_indices, ths in zip(original_traces_indices_per_set, indices_per_set, self.ths_list):
             if len(indices):
@@ -211,7 +217,7 @@ class ConcatFormatReader(AbstractReader):
             key = [key]
 
         new_sub_traceset_indices = self._sub_traceset_indices[key]
-        new_reader = ConcatFormatReader(**self._ths_dict)
+        new_reader = ConcatFormatReader(check=False, headers=self._headers, **self._ths_dict)
         new_reader._sub_traceset_indices = new_sub_traceset_indices
         new_reader._size = len(new_sub_traceset_indices)
 
@@ -236,3 +242,9 @@ class ConcatFormatReader(AbstractReader):
 
     def __str__(self):
         return f'Concat format reader of {self.ths_list} with {len(self)} traces.'
+
+
+# See https://gitlab.com/eshard/estraces/-/issues/18
+@lru_cache(maxsize=8)
+def _cached_arange(s):
+    return _np.arange(s)
