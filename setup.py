@@ -21,6 +21,7 @@ class PyTest(test):
         errno = pytest.main(shlex.split(self.pytest_args))
         sys.exit(errno)
 
+
 here = os.path.abspath(os.path.dirname(__file__))
 
 about = {}

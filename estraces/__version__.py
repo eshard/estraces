@@ -8,3 +8,5 @@ VERSION = _get_version()
 
 __version__ = ".".join(map(str, VERSION))
 __copyright__ = "(c) 2015-2022 ESHARD"
+__author__ = "eshard"
+__author_email__ = "estraces@eshard.com"

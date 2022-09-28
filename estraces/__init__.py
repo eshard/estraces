@@ -125,7 +125,6 @@ How to create a `TraceHeaderSet` instance
 =========
 
 """
-from .__version__ import __version__ as VERSION  # noqa: F401, N812
 from .traces import Trace, TraceHeaderSet, Samples, Metadatas, build_trace_header_set, AbstractReader
 from .formats import (
     read_ths_from_bin_filenames_list,
@@ -163,6 +162,5 @@ __all__ = [
 
 # Set default logging handler to avoid "No handler found" warnings.
 import logging
-from .__version__ import __author__ as AUTHOR, __version__ as VERSION, __author_email__ as AUTHOR_EMAIL  # noqa: F401, N812
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
