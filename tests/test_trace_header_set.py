@@ -97,6 +97,16 @@ def test_ths_slicing_raises_error_with_improper_types(ths):
         ths[np.array(["x", "tutu"])]
     with pytest.raises(IndexError):
         ths[np.array([1.4, 2.2])]
+    with pytest.raises(IndexError):
+        ths[None]
+    with pytest.raises(IndexError):
+        ths[np.float(1.6)]
+
+
+def test_ths_slicing_int_or_numpy_int(ths):
+    expected = DATAS[1]
+    for t in (1, np.int(1), np.int32(1), np.int64(1)):
+        assert np.array_equal(ths[t].samples[:], expected)
 
 
 def test_ths_iteration_on_traces(ths):
