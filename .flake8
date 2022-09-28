@@ -12,5 +12,5 @@ exclude =
     .eggs,
     .pkg,
     .tox,
-max-complexity = 10
+max-complexity = 12
 max-line-length = 160
