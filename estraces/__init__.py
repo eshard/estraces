@@ -125,7 +125,7 @@ How to create a `TraceHeaderSet` instance
 =========
 
 """
-
+from .__version__ import __version__ as VERSION  # noqa: F401, N812
 from .traces import Trace, TraceHeaderSet, Samples, Metadatas, build_trace_header_set, AbstractReader
 from .formats import (
     read_ths_from_bin_filenames_list,
