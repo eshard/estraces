@@ -178,7 +178,9 @@ class TraceHeaderSet:
             (:obj:`TraceHeaderSet`) new instance otherwise
 
         """
-        if isinstance(key, int):
+        if isinstance(key, (int, _np.integer)):
+            if isinstance(key, _np.integer):
+                key = key.item()
             trace = self.traces[key]
             if self._metadatas:
                 trace._metadatas = self._metadatas._copy_with_cache(key=key)
