@@ -24,7 +24,7 @@ class PyTest(test):
 here = os.path.abspath(os.path.dirname(__file__))
 
 about = {}
-with open(os.path.join(here, "estrace/__version__.py")) as f:
+with open(os.path.join(here, "estraces/__version__.py")) as f:
     exec(f.read(), about)
 
 setup(
