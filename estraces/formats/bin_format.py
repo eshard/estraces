@@ -33,7 +33,7 @@ def get_sorted_filenames(pattern):
 
 
 class PaddingMode(_enum.Enum):
-    """Defines the padding mode used when traces of binary format have different length.
+    """Define the padding mode used when traces of binary format have different length.
 
     Possible modes are:
         - NONE: no padding is applied, an exception is thrown when instantiating the trace set.
@@ -47,7 +47,7 @@ class PaddingMode(_enum.Enum):
 
 
 def read_ths_from_bin_filenames_pattern(filename_pattern, metadatas_parsers, dtype, headers={}, offset=0, padding_mode=PaddingMode.NONE):
-    """Build and returns a :class:`TraceHeaderSet` instance from binaries files following a filename pattern.
+    """Build and return a :class:`TraceHeaderSet` instance from binaries files following a filename pattern.
 
     Each file must contains samples data for one trace.
 
@@ -56,7 +56,7 @@ def read_ths_from_bin_filenames_pattern(filename_pattern, metadatas_parsers, dty
         metadatas_parsers (dict): dict with a key for each metadata of the trace set, with value a :class:`bin_extractor.HeaderExtractor`,
             :class:`bin_extractor.PatternExtractor`, :class:`bin_extractor.FilePatternExtractor` or :class:`bin_extractor.DirectValue` instance.
         dtype (dtype): the Numpy samples data dtype
-        headers (dict, default={}): dictionnary containing headers values for this trace set.
+        headers (dict, default={}): dictionary containing headers values for this trace set.
         offset (int, default:0): use as an offset when reading samples in files.
         padding_mode (:class:`PaddingMode`, default: `PaddingMode.NONE`): choose how to handle different traces size in your trace list.
             Possible modes are NONE, PAD and TRUNCATE (see :class:`bin_format.PaddingMode`).
@@ -77,7 +77,7 @@ def read_ths_from_bin_filenames_pattern(filename_pattern, metadatas_parsers, dty
 
 
 def read_ths_from_bin_filenames_list(filenames_list, metadatas_parsers, dtype, headers={}, offset=0, padding_mode=PaddingMode.NONE):
-    """Build and returns a :class:`TraceHeaderSet` instance from binaries files listed.
+    """Build and return a :class:`TraceHeaderSet` instance from binaries files listed.
 
     Each file must contains samples data for one trace.
 
@@ -86,7 +86,7 @@ def read_ths_from_bin_filenames_list(filenames_list, metadatas_parsers, dtype, h
         metadatas_parsers (dict): dict with a key for each metadata of the trace set, with value a :class:`bin_extractor.HeaderExtractor`,
             :class:`bin_extractor.PatternExtractor`, :class:`bin_extractor.FilePatternExtractor` or :class:`bin_extractor.DirectValue` instance.
         dtype (dtype): the Numpy samples data dtype
-        headers (dict, default={}): dictionnary containing headers values for this trace set.
+        headers (dict, default={}): dictionary containing headers values for this trace set.
         offset (int, default: 0): use as an offset when reading samples in files.
         padding_mode (:class:`PaddingMode`, default: `PaddingMode.NONE`): choose how to handle different traces size in your trace list.
             Possible values are NONE, PAD and TRUNCATE (see :class:`bin_format.PaddingMode`).

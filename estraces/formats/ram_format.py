@@ -1,16 +1,15 @@
-import numpy as np
+import numpy as _np
 
 from ..traces.abstract_reader import AbstractReader
 from ..traces.trace_header_set import build_trace_header_set
 
 
 def read_ths_from_ram(samples, **kwargs):
-    """Build and returns a :class:`TraceHeaderSet` instance from arrays in RAM memory.
+    """Build and return a :class:`TraceHeaderSet` instance from arrays in RAM memory.
 
     Args:
         samples (ndarray): traces samples
         **kwargs (ndarray): metadata as ndarray
-
 
     Returns:
         (:obj:`TraceHeaderSet`)
@@ -35,13 +34,13 @@ class RAMReader(AbstractReader):
 
     @staticmethod
     def _test_nd_arrays(samples, kwargs_dict):
-        if not isinstance(samples, np.ndarray):
-            raise TypeError(f'`samples` argument must be a {np.ndarray}')
+        if not isinstance(samples, _np.ndarray):
+            raise TypeError(f'`samples` argument must be a {_np.ndarray}')
         if samples.ndim != 2:
             raise TypeError('`samples` argument must be a 2-dimensions ndarray')
         for key in kwargs_dict.keys():
-            if not isinstance(kwargs_dict[key], np.ndarray):
-                raise TypeError(f'`{key}` argument must be a {np.ndarray}')
+            if not isinstance(kwargs_dict[key], _np.ndarray):
+                raise TypeError(f'`{key}` argument must be a {_np.ndarray}')
 
     @staticmethod
     def _test_shapes_compatibility(samples, kwargs_dict):
@@ -80,16 +79,16 @@ class RAMReader(AbstractReader):
 
     @property
     def metadatas_keys(self):
-        """Provides a list or views of the metadatas keys available."""
+        """Provide a list or views of the metadatas keys available."""
         return self._kwargs_dict.keys()
 
     @property
     def headers_keys(self):
-        """Provides a list or views of the headers keys available."""
+        """Provide a list or views of the headers keys available."""
         return self._headers.keys()
 
     def get_trace_size(self, trace_id):
-        """Provides the size of trace trace_id."""
+        """Provide the size of trace trace_id."""
         return self._trace_size
 
     def __str__(self):

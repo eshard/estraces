@@ -18,14 +18,14 @@ class ETSWriterError(Exception):
 
 
 class ETSWriter:
-    """Provides API to create an ETS (Eshard Trace Set) file."""
+    """Provide API to create an ETS (Eshard Trace Set) file."""
 
     def __init__(self, filename, overwrite=False):
         """Create an ETS file writer instance.
 
         Args:
             filename (str): path and filename to write the ETS.
-            overwrite (bool, default=False): if True, any existing file with filename will be erased before writing datas.
+            overwrite (bool, default=False): if True, any existing file with filename will be erased before writing data.
 
         """
         self._overwrite = overwrite
@@ -34,7 +34,7 @@ class ETSWriter:
         self._initialized_datasets = None
         if _os.path.isfile(self._filename):
             if self._overwrite:
-                logger.warning(f'File {self._filename} already exists. It will be reseted on the first write operation.')
+                logger.warning(f'File {self._filename} already exists. It will be reset on the first write operation.')
             else:
                 logger.info(f'File {self._filename} already exists. If no indexes are specified, new data will be append on existing datasets.')
         self._is_init = False
@@ -288,10 +288,10 @@ class ETSWriter:
 
 
 def compress_ets(filename, out_filename):
-    """Creates a compressed version of an ETS file.
+    """Create a compressed version of an ETS file.
 
     Creates a new ETS file using compression options provided by h5.
-    The gain of compression can highly vary, depending on the nature of the datas, from 10% to 50%.
+    The gain of compression can highly vary, depending on the nature of the data, from 10% to 50%.
     The trade-off is a somewhat slower reading from the resulting file.
 
     Args:

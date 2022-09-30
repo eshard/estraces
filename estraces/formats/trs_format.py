@@ -10,14 +10,14 @@ except ModuleNotFoundError:
 
 
 def read_ths_from_trs_file(filename, metadatas_parsers, dtype=None):
-    """Build and returns a :class:`TraceHeaderSet` instance from TraceRiscureSet file.
+    """Build and return a :class:`TraceHeaderSet` instance from TraceRiscureSet file.
 
     Args:
         filename (str): TRS filename
         metadatas_parsers (dict): dict with a key for each metadata of the trace set,
             with value a function or lambda taking `data` as input and returning the metadata value parsed from it.
             For TRS V2 files, the `metadata_parsers` argument can be None. In this case, it is built with the TRACE_PARAMETER_DEFINITIONS header.
-        dtype (dtype, optionnal): a Numpy dtype that will override the TRS samples data type
+        dtype (dtype, optional): a Numpy dtype that will override the TRS samples data type
 
     Returns:
         (:obj:`TraceHeaderSet`)
@@ -29,7 +29,7 @@ def read_ths_from_trs_file(filename, metadatas_parsers, dtype=None):
             metadatas_parsers=metadatas_parsers,
             dtype=dtype
         ),
-        name="TrsFromat trace header set"
+        name="TrsFormat trace header set"
     )
 
 
@@ -58,7 +58,7 @@ class TRSFormatReader(abstract_reader.AbstractReader):
 
     def _metadatas_parsers_from_trace_parameter_definitions(self):
         if not TRS_V2:
-            raise TypeError('Setting a TRS reader with `metadatas_parsers=None` allowed only for `pyton > 3.6` and `trsfile > 0.3.2`.')
+            raise TypeError('Setting a TRS reader with `metadatas_parsers=None` allowed only for `python > 3.6` and `trsfile > 0.3.2`.')
         try:
             param_definitions = self._headers['trace_parameter_definitions']
         except KeyError:

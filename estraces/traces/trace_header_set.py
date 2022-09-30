@@ -36,7 +36,7 @@ class TracesContainer(abc.Collection):
 
 
 class TraceHeaderSet:
-    """Provides a consistent API for manipulating samples data and metadatas from any kind of trace files.
+    """Provide a consistent API for manipulating samples data and metadatas from any kind of trace files.
 
     Attributes:
         name (str): name of traces set
@@ -70,12 +70,12 @@ class TraceHeaderSet:
 
             ths.traces
 
-        Samples are available as 2 dimensionnal array-like :class:`Samples` with shape (number of traces, size of traces).
+        Samples are available as 2 dimensional array-like :class:`Samples` with shape (number of traces, size of traces).
         It supports a subset of numpy.ndarray-like slicing - including advanced list-based slicing::
 
             ths.samples[2000:3000] # slice on traces, keeping all samples
             ths.samples[:, 1000:2000] # slice on samples data, for all traces
-            ths.samples[[1, 100, 1000], :] # get samples for traces with indesx 1, 100 and 100
+            ths.samples[[1, 100, 1000], :] # get samples for traces with indexes 1, 100 and 100
 
         Metadatas are available through a dict-like :class:`Metadatas` instance::
 
@@ -104,7 +104,7 @@ class TraceHeaderSet:
     _is_initialized = False
 
     def __init__(self, reader, name=""):
-        """Must not be instantiate or initialized directly, only through :func:`build_trace_header_set`."""
+        """Must not be instantiated or initialized directly, only through :func:`build_trace_header_set`."""
         if not self.__class__._is_valid_trace_class:
             raise TypeError(
                 "{c} cant be instantiate directly. Use {f} function.".format(
@@ -168,7 +168,7 @@ class TraceHeaderSet:
         return slice(start, stop, key.step)
 
     def __getitem__(self, key):
-        """Implements slicing of :class:`TraceHeaderSet` instance.
+        """Implement slicing of :class:`TraceHeaderSet` instance.
 
         Args:
             key (int, slice, list): slice or item to return
@@ -188,9 +188,9 @@ class TraceHeaderSet:
         elif isinstance(key, (slice, list, _np.ndarray)):
             if isinstance(key, _np.ndarray):
                 if key.ndim > 1 or key.dtype.kind not in ['i', 'u']:
-                    raise IndexError(f'Cant slice TraceHeaderSet with numpy array of dim {key.ndim} and kind {key.dtype.kind}.')
+                    raise IndexError(f'Cannot slice TraceHeaderSet with numpy array of dim {key.ndim} and kind {key.dtype.kind}.')
             if not isinstance(key, slice) and max(key) > len(self):
-                raise IndexError(f'Cant index TraceHeaderSet of length {len(self)} with index {max(key)}.')
+                raise IndexError(f'Cannot index TraceHeaderSet of length {len(self)} with index {max(key)}.')
 
             if isinstance(key, slice):
                 key = self._transpose_slice(key)
@@ -203,10 +203,9 @@ class TraceHeaderSet:
             return new_ths
         else:
             if isinstance(key, tuple):
-                raise IndexError('too many indices for TraceHeaderSet.')
+                raise IndexError('Too many indices for TraceHeaderSet.')
             raise IndexError(
-                "only integers, slices (':'), 1 dimension numpy array and lists ([1, 10, 5]) are valid indices for "
-                "TraceHeaderSet."
+                "Only integers, slices (':'), 1 dimension numpy array and lists ([1, 10, 5]) are valid indices for TraceHeaderSet."
             )
 
     def __iter__(self):
@@ -215,14 +214,14 @@ class TraceHeaderSet:
 
     @property
     def traces(self):
-        """Provides a list of :class:`Trace` instances from this trace header set."""
+        """Provide a list of :class:`Trace` instances from this trace header set."""
         if not self._traces:
             self._traces = TracesContainer(trace_klass=self._trace_klass, reader=self._reader)
         return self._traces
 
     @property
     def metadatas(self):
-        """Provides a :class:`Metadatas` mapping-like object. Provides metadatas values for this trace header set."""
+        """Provide a :class:`Metadatas` mapping-like object. Provides metadatas values for this trace header set."""
         if not self._metadatas:
             self._metadatas = metadatas.Metadatas(reader=self._reader)
         return self._metadatas
@@ -235,13 +234,13 @@ class TraceHeaderSet:
 
     @property
     def samples(self):
-        """Provides a 2d :class:`Samples` instance ndarray-like of shape (number of traces, size of traces)."""
+        """Provide a 2d :class:`Samples` instance ndarray-like of shape (number of traces, size of traces)."""
         if self._samples is None:
             self._samples = samples.Samples(reader=self._reader)
         return self._samples
 
     def split(self, part_size):
-        """Returns an iterable of :class:`TraceHeaderSet` slices of at least length ``part_size``.
+        """Return an iterable of :class:`TraceHeaderSet` slices of at least length ``part_size``.
 
         Args:
             part_size (int): number of traces per slice
@@ -251,7 +250,7 @@ class TraceHeaderSet:
 
         """
         class SplittedTraceHeaderSetIterable:
-            """Provides iterable around parts of equal size of a given :class:`TraceHeaderSet`."""
+            """Provide iterable around parts of equal size of a given :class:`TraceHeaderSet`."""
 
             def __init__(self, ths, part_size):
                 self._ths = ths
@@ -302,7 +301,7 @@ def build_trace_header_set(reader: abstract_reader.AbstractReader, name: str) ->
     suited to the format instance provided, instantiate a trace header set and returns it.
 
     Warning:
-        End user should not use directly this function, but factory functions suited to their concrete traces file format, provided by format developpers.
+        End user should not use directly this function, but factory functions suited to their concrete traces file format, provided by format developers.
 
     Args:
         reader: instance of a format reader class inheriting from :class:`AbstractReader`

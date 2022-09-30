@@ -62,3 +62,4 @@ estraces/**/*.c
 out/*
 __pycache__/*
 .venv/
+tmp/

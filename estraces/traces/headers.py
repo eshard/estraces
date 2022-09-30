@@ -4,7 +4,7 @@ import numpy as _np
 
 
 class Headers(collections.abc.Mapping):
-    """Provides a dict-like object of trace header set global metadata values."""
+    """Provide a dict-like object of trace header set global metadata values."""
 
     def __init__(self, reader: abstract_reader.AbstractReader):
         if not isinstance(reader, abstract_reader.AbstractReader):
@@ -20,7 +20,7 @@ class Headers(collections.abc.Mapping):
         if not isinstance(key, str):
             raise TypeError(f'key must be a str, not {type(key)}.')
         if key not in self._keys:
-            raise KeyError("Header with key {k} missing".format(k=key))
+            raise KeyError(f'Header with key {key} missing')
         return self._reader.fetch_header(key=key)
 
     def __len__(self):

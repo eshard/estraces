@@ -6,23 +6,22 @@ import numpy as _np
 
 
 class DirectValue(object):
-    """Object used to generate handle user defined values for metadata.
+    """Object used to handle user defined values for metadata.
 
     Attributes:
         value       : the direct value to set as a metadata
-        unhexlify   : Get the binary data out of the hexadecimal representation of value (default: True)
+        unhexlify   : get the binary data out of the hexadecimal representation of value (default: True)
 
-    When unhexlify is True (default), the expected inputs are either a hexsting without the '0x' prefix or
+    When unhexlify is True (default), the expected inputs are either a hexadecimal string without the '0x' prefix or
     an integer list in range(0, 256). When unhexlify is False, it can be any regular string.
 
     Returns:
         a DirectValue() object
 
     Usage example:
-
-    d0 = DirectValue("00AA11BB")
-    d1 = DirectValue([0, 170, 17, 187])
-    d2 = DirectValue("John Dow", unhexlify=False)
+        d0 = DirectValue("00AA11BB")
+        d1 = DirectValue([0, 170, 17, 187])
+        d2 = DirectValue("John Dow", unhexlify=False)
 
     """
 
@@ -35,7 +34,7 @@ class DirectValue(object):
         if isinstance(input, str):
             # We expect a valid hexString
             if self.unhexlify:
-                # A valid hexstring must have an even size
+                # A valid hexString must have an even size
                 if len(input) % 2 != 0:
                     raise ValueError("Odd-length string.")
                 # and only the following subset of characters
@@ -48,7 +47,7 @@ class DirectValue(object):
             except TypeError as t_err:
                 raise TypeError(t_err)
         else:
-            raise ValueError("Invalid value format %s. HexString without the '0x' prefix or a list of integer in range(0, 256) is expected." % type(input))
+            raise ValueError(f"Invalid value format {type(input)}. HexString without the '0x' prefix or a list of integer in range(0, 256) is expected.")
 
         return input
 
@@ -74,10 +73,10 @@ class DirectValue(object):
 
 
 class HeaderExtractor(object):
-    """Object to retrieve meta-data from binary files.
+    """Object to retrieve metadata from binary files.
 
-    The user muset specify a starting reading offset, and either the end offset
-    or the number of bytes to be read.
+    The user must specify a start reading offset, and either the end offset
+    or the number of bytes to read.
 
     Attributes:
         start   : start reading offset
@@ -104,19 +103,19 @@ class HeaderExtractor(object):
             raise ValueError("No 'start' offset specified.")
 
         if not isinstance(start, int) or start < 0:
-            raise ValueError('offsets must be positive integer.')
+            raise ValueError('start offset must be positive integer.')
 
         self.start = start
 
         if end is not None:
             if not isinstance(end, int) or end < 0:
-                raise ValueError('offsets must be positive integer.')
+                raise ValueError('end offset must be positive integer.')
             self.end = end
             self.count = self.end - self.start
 
         if count is not None:
             if not isinstance(count, int) or count < 0:
-                raise ValueError('offsets must be positive integer.')
+                raise ValueError('count must be positive integer.')
             self.count = count
             self.end = self.start + count
 
@@ -124,10 +123,10 @@ class HeaderExtractor(object):
             raise ValueError('The end offset must be greater than the start offset.')
 
     def get_text(self, filename):
-        """Get the text from a binary hexString contained in a file header."""
+        """Get the text from a binary hexadecimal string contained in a file header."""
         file_size = _os.stat(filename).st_size
         if self.end > file_size:
-            raise ValueError('%d is greater than file size (%d bytes)' % (self.end, file_size))
+            raise ValueError(f'{self.end} is greater than file size ({file_size} bytes)')
         file_pointer = _np.memmap(filename, dtype=_np.uint8, mode='r')
         data = _np.copy(file_pointer[self.start:self.end])
         del file_pointer
@@ -140,7 +139,7 @@ class HeaderExtractor(object):
     def get_text_stacked(self, header):
         """Get the text from a binary header contained in a stacked file."""
         if self.end > len(header):
-            raise ValueError('%d is greater than header size (%d bytes).' % (self.end, len(header)))
+            raise ValueError(f'{self.end} is greater than header size ({len(header)} bytes).')
         data = _np.copy(header[self.start:self.end])
 
         if not self.unhexlify:
@@ -155,8 +154,7 @@ class PatternExtractor(object):
     Attributes:
         pattern     : a string specifying the regular expression.
         replace     : the replacement pattern using regex groups.
-        unhexlify   : returns the binary data represented by the
-                        hexadecimal string value.
+        unhexlify   : returns the binary data represented by the hexadecimal string value.
 
     """
 
@@ -169,9 +167,8 @@ class PatternExtractor(object):
     def get_pattern(self, string):
         """Return the matching PatternExtractor.
 
-        The pattern that matches the regex self.pattern in the input string
-        will be returned. According to self.unhexlify, it will return a string
-        or binary data.
+        The pattern that matches the regex self.pattern in the input string will be returned.
+        According to self.unhexlify, it will return a string or binary data.
         """
         string = string.rstrip()
         if self.replace:
@@ -180,7 +177,7 @@ class PatternExtractor(object):
             try:
                 string = self.pattern.findall(string)[self.num]
             except IndexError:
-                raise ValueError("Pattern '%s' not found in '%s'." % (self.pattern.pattern, string))
+                raise ValueError(f"Pattern '{self.pattern.pattern}' not found in '{string}'.")
         if self.unhexlify:
             string = _binascii.unhexlify(string)
         return string
@@ -206,7 +203,7 @@ class FilePatternExtractor(PatternExtractor):
         if _os.path.isfile(filename):
             return filename
         else:
-            raise FileNotFoundError("'%s' not found" % filename)
+            raise FileNotFoundError(f"'{filename}' not found")
 
     def text_generator(self, filename):
         with open(filename, 'r') as f:

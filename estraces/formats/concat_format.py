@@ -8,7 +8,7 @@ import numpy as _np
 
 
 def read_ths_from_multiple_ths(*args, **kwargs):
-    """Build and returns a :class:`TraceHeaderSet` instance as the concatenation of all input THSs.
+    """Build and return a :class:`TraceHeaderSet` instance as the concatenation of all input THSs.
 
     Args:
         args: some `TraceHeaderSet` objects.
@@ -70,7 +70,7 @@ class ConcatFormatReader(AbstractReader):
         for key in thss_dict.keys():
             set1 = set(thss_dict[key]._reader.metadatas_keys)
             if set0 != set1:
-                raise ValueError(f'Inconsistent metadatas between: {key0}, {set0} and {key}, {set1}')
+                raise ValueError(f'Inconsistent metadata keys between: {key0}, {set0} and {key}, {set1}')
 
     @staticmethod
     def _check_headers(thss_dict, headers={}):

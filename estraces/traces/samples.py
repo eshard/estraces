@@ -3,7 +3,7 @@ from . import abstract_reader
 
 
 class Samples:
-    """Provides a wrapper object around Numpy ndarray for traces samples data manipulation.
+    """Provide a wrapper object around Numpy ndarray for traces samples data manipulation.
 
     A Samples instance can have 1 or 2 dimensions. It supports a reduced slicing and indexing API.
     ndarray API methods calls are proxied to the wrapped ndarray.
@@ -87,7 +87,7 @@ class Samples:
     def _check_indices_type(self, indices):
         inds = indices if isinstance(indices, tuple) else (indices, )
         if isinstance(indices, tuple) and len(indices) > self.ndim:
-            raise IndexError(f'Samples support at most {self.ndim} dimensions. Perhase try using samples this way: trace.samples[:]')
+            raise IndexError(f'Samples support at most {self.ndim} dimensions. Perhaps try using samples this way: trace.samples[:]')
         for index in inds:
             self._check_index_type(index=index)
 

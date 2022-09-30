@@ -42,13 +42,13 @@ def read_ths_from_sqlite(
     metadata_config: MetadataConfig = EmptyMetadata,
     headers_config: HeadersConfig = EmptyHeaders
 ):
-    """Build and returns a :class:`TraceHeaderSet` instance read from a SQLite3 database file.
+    """Build and return a :class:`TraceHeaderSet` instance read from a SQLite3 database file.
 
     Args:
         filename (str or Path): filename of the SQLite3 database.
         samples_config (SamplesConfig): instance of `SamplesConfig` with parameters to read samples - table name, pk column name, samples column name and dtype
             format of samples data.
-        metadata_config (MetadataConfig): instance of `MetadataConfig` with paramateers to read trace metadata - table name, pk column name and dict where each
+        metadata_config (MetadataConfig): instance of `MetadataConfig` with parameters to read trace metadata - table name, pk column name and dict where each
             entry is the column name of a metadata and the corresponding value the dtype of the metadata.
         headers_config (HeadersConfig): instance of `HeadersConfig` with parameters to read headers from a specific table - table name, tag column name,
             value column name and dtype column name.
@@ -72,7 +72,7 @@ class SQLiteFormatReader(AbstractReader):
 
     def __init__(self, filename: str, samples_config: SamplesConfig, metadata_config: MetadataConfig, headers_config: HeadersConfig):
         if not _os.path.exists(filename):
-            raise ValueError(f'SQLite database file {filename} doesnt exists.')
+            raise ValueError(f'SQLite database file {filename} does not exists.')
         self._connection = sqlite3.connect(filename)
         try:
             self._connection.cursor().execute('select name from sqlite_master')
@@ -180,7 +180,7 @@ class SQLiteFormatReader(AbstractReader):
         return _np.array(traces)
 
     def __getitem__(self, key):
-        """Returns a new format instance limited to traces[key] subset.
+        """Return a new format instance limited to traces[key] subset.
 
         Args:
             key: slice or list of traces indexes to slice on.
@@ -230,13 +230,13 @@ class SQLiteFormatReader(AbstractReader):
 
     @property
     def metadatas_keys(self):
-        """Provides a list or views of the metadatas keys available."""
+        """Provide a list or views of the metadatas keys available."""
         if self._metadata_config is not EmptyMetadata:
             return self._metadata_config.metadata_defs.keys()
         return []
 
     def get_trace_size(self, trace_id):
-        """Provides the size of trace trace_id."""
+        """Provide the size of trace trace_id."""
         query = f'SELECT {self._samples_config.samples_column_name} FROM {self._samples_config.table_name} WHERE {self._samples_config.pk_column_name}=?'
         data = _execute_query(self._connection, query, (trace_id, ), error_message='Problem with samples configuration: ')
         data = _np.frombuffer(data[0][0], dtype=self.dtype)
@@ -244,7 +244,7 @@ class SQLiteFormatReader(AbstractReader):
 
     @property
     def headers_keys(self):
-        """Provides a list or view of the headers keys available."""
+        """Provide a list or view of the headers keys available."""
         if self._headers_keys is None and self._headers_config is not EmptyHeaders:
             query = f'SELECT {self._headers_config.tag_column_name} FROM {self._headers_config.table_name}'
             data = _execute_query(self._connection, query, (), 'Problem with headers config: ')

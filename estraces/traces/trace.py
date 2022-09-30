@@ -5,7 +5,7 @@ from . import headers
 
 
 class Trace:
-    """Provides a consistent API to manipulate a trace samples data and metadatas.
+    """Provide a consistent API to manipulate a trace samples data and metadatas.
 
     Attributes:
         samples (:class:`Samples`): 1 dimension samples data
@@ -15,7 +15,7 @@ class Trace:
         All metadatas are available through the `metadatas` attributes and through a corresponding named property.
 
     Examples:
-        Samples are available as 1 dimensionnal array-like :class:`Samples` with shape (size of trace,).
+        Samples are available as 1 dimensional array-like :class:`Samples` with shape (size of trace,).
         It supports a subset of numpy.ndarray-like slicing - including advanced list-based slicing::
 
             trace.samples[2000:3000]
