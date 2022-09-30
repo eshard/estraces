@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import sys
-import os
 
 from setuptools import setup
 from setuptools.command.test import test
@@ -22,13 +21,7 @@ class PyTest(test):
         sys.exit(errno)
 
 
-here = os.path.abspath(os.path.dirname(__file__))
-
-about = {}
-with open(os.path.join(here, "estraces/__version__.py")) as f:
-    exec(f.read(), about)
-
 setup(
-    version=about['__version__'],
-    cmdclass={"test": PyTest}
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(cmdclass={"test": PyTest})    
 )

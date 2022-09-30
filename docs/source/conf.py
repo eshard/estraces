@@ -5,6 +5,8 @@
 
 import os
 import sys
+import estraces
+
 
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../'))
@@ -14,11 +16,11 @@ sys.path.insert(0, os.path.abspath('../../'))
 # -- Project information -----------------------------------------------------
 
 project = 'estraces'
-copyright = '2019, eshard'
-author = 'eshard team'
+copyright = '2019-2022, eshard'
+author = 'eshard'
 
-version = '1.7'
-release = '1.7.1'
+version = scared.__version__
+release = scared.__version__
 
 
 # -- General configuration ---------------------------------------------------

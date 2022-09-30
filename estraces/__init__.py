@@ -138,6 +138,7 @@ from .formats import (
 )
 from .formats.ets_writer import ETSWriter, ETSWriterError, compress_ets
 from .formats.bin_format import PaddingMode
+from . import _version
 
 __all__ = [
     "Trace",
@@ -164,3 +165,6 @@ __all__ = [
 import logging
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
+
+__version__ = _version.get_versions()['version']
+VERSION = _version.get_versions()['version']
