@@ -3,7 +3,7 @@
 
 esTraces provides the basic tools to handle side-channel traces in a unified way, through:
    * classes dedicated to trace and trace set manipulation: :class:`estraces.TraceHeaderSet`, :class:`estraces.Trace`
-   * specific file formats reader: binaries formats and Eshard format ETS
+   * specific file formats reader: binaries formats and eShard's format ETS
    * abstract base class to easily implement a reader for any specific file format
 
 Trace and TraceHeaderSet
@@ -82,7 +82,7 @@ RAM reader format: `read_ths_from_ram` function
 
 .. autofunction:: estraces.read_ths_from_ram
 
-Get a trace header set concateneted from multiple trace header set instances
+Get a trace header set concatenated from multiple trace header set instances
 ============================================================================
 
 The `read_ths_from_multiple_ths` function allows to build a `TraceHeaderSet` from several others `TraceHeaderSet` instance,
@@ -120,7 +120,7 @@ How to create a `TraceHeaderSet` instance
 .. autofunction:: estraces.build_trace_header_set
 
 
-:copyright: (c) 2019 ESHARD
+:copyright: (c) 2022 ESHARD
 
 =========
 

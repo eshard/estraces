@@ -1,4 +1,4 @@
-import numpy as np
+import numpy as _np
 
 
 def is_array_equivalent_to_a_slice(array):
@@ -6,7 +6,7 @@ def is_array_equivalent_to_a_slice(array):
 
 
 def _items_are_in_ascending_order(array):
-    return np.any(np.diff(array) > 0)
+    return _np.any(_np.diff(array) > 0)
 
 
 def _array_has_enough_items(array):
@@ -14,13 +14,13 @@ def _array_has_enough_items(array):
 
 
 def _items_are_equally_spaced(array):
-    return not np.any(np.diff(array, 2))
+    return not _np.any(_np.diff(array, 2))
 
 
 def build_equivalent_slice(array):
     if len(array) == 0:
         return slice(0, 0, 1)
-    start = np.min(array)
-    stop = np.max(array) + 1
+    start = _np.min(array)
+    stop = _np.max(array) + 1
     step = array[1] - array[0] if len(array) > 1 else 1
     return slice(start, stop, step)

@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath('../../'))
 # -- Project information -----------------------------------------------------
 
 project = 'estraces'
-copyright = '2019, eshard'
+copyright = '2022, eshard'
 author = 'eshard team'
 
 version = '1.7'

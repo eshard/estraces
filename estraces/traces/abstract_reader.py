@@ -2,7 +2,7 @@ import abc
 import typing
 import numpy as _np
 
-"""Abtract base class for concrete trace formats.
+"""Abstract base class for concrete trace formats.
 
 
 """

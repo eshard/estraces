@@ -335,12 +335,12 @@ def test_header_extractor_wrong_inputs():
     with pytest.raises(ValueError) as exc5:
         bin_extractor.HeaderExtractor(start=1, end=1.2)
 
-    assert str(exc0.value) == 'offsets must be positive integer.'
-    assert str(exc1.value) == 'offsets must be positive integer.'
-    assert str(exc2.value) == 'offsets must be positive integer.'
-    assert str(exc3.value) == 'offsets must be positive integer.'
-    assert str(exc4.value) == 'offsets must be positive integer.'
-    assert str(exc5.value) == 'offsets must be positive integer.'
+    assert 'must be positive integer' in str(exc0.value)
+    assert 'must be positive integer' in str(exc1.value)
+    assert 'must be positive integer' in str(exc2.value)
+    assert 'must be positive integer' in str(exc3.value)
+    assert 'must be positive integer' in str(exc4.value)
+    assert 'must be positive integer' in str(exc5.value)
 
     # Incoherent start, end values
     with pytest.raises(ValueError) as exc0:

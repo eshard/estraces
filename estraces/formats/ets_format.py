@@ -1,6 +1,6 @@
 import h5py as _h5
 import pathlib
-import numpy as np
+import numpy as _np
 
 from ..traces.abstract_reader import AbstractReader
 from ..traces.trace_header_set import build_trace_header_set
@@ -8,7 +8,7 @@ from . import frames
 
 
 def read_ths_from_ets_file(filename):
-    """Build and returns a :class:`TraceHeaderSet` instance from an ETS file.
+    """Build and return a :class:`TraceHeaderSet` instance from an ETS file.
 
     Args:
         filename (str or Path): filename of the ETS file
@@ -29,10 +29,10 @@ _METADATAS_KEY = 'metadata'
 
 def _cast_to_str(val):
     # h5py doesn't manage nicely strings values. We must cast these explicitly before returning to the user.
-    if isinstance(val, np.ndarray):
+    if isinstance(val, _np.ndarray):
         if 'S' in str(val.dtype) or 'object' == str(val.dtype):
             try:
-                return np.array([r.decode() for r in val])
+                return _np.array([r.decode() for r in val])
             except AttributeError:
                 return val
     if isinstance(val, bytes):
@@ -68,7 +68,7 @@ class ETSFormatReader(AbstractReader):
             if isinstance(self._traceset_indices, slice):
                 res = self._metadatas[key][self._traceset_indices]
             else:
-                res = np.array([self._metadatas[key][i] for i in self._traceset_indices])
+                res = _np.array([self._metadatas[key][i] for i in self._traceset_indices])
         return _cast_to_str(res)
 
     @property
@@ -91,18 +91,18 @@ class ETSFormatReader(AbstractReader):
     def _convert_traces_indices_to_file_indices_array(self, traces):
         if self._sub_traceset_indices is not None:
             sub_max = len(self._sub_traceset_indices)
-            traces_index = np.array([t for t in traces if t < sub_max])
+            traces_index = _np.array([t for t in traces if t < sub_max])
             return self._sub_traceset_indices[traces_index]
-        return np.array(traces)
+        return _np.array(traces)
 
     def fetch_samples(self, traces, frame):
         traces = self._convert_traces_indices_to_file_indices_key(traces)
 
         if isinstance(frame, int):
-            frame = np.array([frame])
+            frame = _np.array([frame])
         elif isinstance(frame, list):
-            frame = np.array(frame)
-        if isinstance(frame, np.ndarray) and frames.is_array_equivalent_to_a_slice(frame):
+            frame = _np.array(frame)
+        if isinstance(frame, _np.ndarray) and frames.is_array_equivalent_to_a_slice(frame):
             frame = frames.build_equivalent_slice(frame)
 
         if isinstance(frame, (Ellipsis.__class__, slice)):
@@ -112,8 +112,8 @@ class ETSFormatReader(AbstractReader):
                 start = frame[0]
                 stop = None
             else:
-                start = np.min(frame)
-                stop = np.max(frame) + 1
+                start = _np.min(frame)
+                stop = _np.max(frame) + 1
             frame = frame - start
             return self._slice_traces(keys_tuple=(traces, slice(start, stop)), final_frame=frame)
             # TODO: how to write a test case for the memory overhead optimization strategy below ?
@@ -128,13 +128,13 @@ class ETSFormatReader(AbstractReader):
             if isinstance(traces, slice):
                 return self._h5_file[_TRACES_KEY][keys_tuple][:, final_frame]
             if len(traces) > 0:
-                return np.vstack([self._h5_file[_TRACES_KEY][t, frame_slice][final_frame] for t in traces])
+                return _np.vstack([self._h5_file[_TRACES_KEY][t, frame_slice][final_frame] for t in traces])
         else:
             if isinstance(traces, slice):
                 return self._h5_file[_TRACES_KEY][keys_tuple]
             if len(traces) > 0:
-                return np.vstack([self._h5_file[_TRACES_KEY][t, frame_slice] for t in traces])
-        return np.array([])
+                return _np.vstack([self._h5_file[_TRACES_KEY][t, frame_slice] for t in traces])
+        return _np.array([])
 
     def __getitem__(self, key):
         super().__getitem__(key)
