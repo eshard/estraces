@@ -24,5 +24,5 @@ class PyTest(test):
 
 setup(
     version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(cmdclass={"test": PyTest})    
+    cmdclass=versioneer.get_cmdclass(cmdclass={"test": PyTest})
 )
