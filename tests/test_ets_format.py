@@ -1,5 +1,6 @@
 from .context import estraces # noqa
 import pytest
+import shutil
 import os
 import numpy as np
 import timeit
@@ -149,6 +150,8 @@ PATH = 'tests/samples/'
 def ets_filename():
     fn = 'big_ets'
     ets_filename = f'{PATH}{fn}.ets'
+    ets_filename_bck = f'{PATH}{fn}.ets.bck'
+    shutil.copyfile(ets_filename, ets_filename_bck)
     num_traces = 50000
     len_trc = 1000
     plains = np.array([np.random.randint(0, 256, 32, dtype="uint8") for i in range(num_traces)])
@@ -164,7 +167,7 @@ def ets_filename():
     file.flush()
     file.close()
     yield ets_filename
-    os.remove(ets_filename)
+    shutil.copyfile(ets_filename_bck, ets_filename)
 
 
 def test_ths_slicing_memory_consumption(ets_filename):
