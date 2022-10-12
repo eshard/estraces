@@ -1,0 +1,30 @@
+{% set data = load_setup_py_data() %}
+
+package:
+  name: estraces-dev
+  version: {{ data['version'] }}
+
+source:
+  path: ../../
+
+build:
+  noarch: python
+
+requirements:
+  build:
+    - wheel
+  host:
+    - python {{ python }}
+  run:
+    - python
+    - mkl
+    - h5py
+    - numpy
+    - trsfile
+    - psutil
+
+about:
+  home: https://gitlab.com/eshard/estraces
+  license: GNU LGPL V3
+  license_file: LICENSE
+  summary: Traces and trace header set Python library for side-channel analysis.

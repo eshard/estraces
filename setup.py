@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import sys
+import versioneer
+
 from setuptools import setup
 from setuptools.command.test import test
 
@@ -21,5 +23,6 @@ class PyTest(test):
 
 
 setup(
-    cmdclass={"test": PyTest}
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(cmdclass={"test": PyTest})
 )

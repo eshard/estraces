@@ -12,5 +12,6 @@ exclude =
     .eggs,
     .pkg,
     .tox,
+    estraces/_version.py,
 max-complexity = 12
 max-line-length = 160

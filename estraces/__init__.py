@@ -125,7 +125,6 @@ How to create a `TraceHeaderSet` instance
 =========
 
 """
-
 from .traces import Trace, TraceHeaderSet, Samples, Metadatas, build_trace_header_set, AbstractReader
 from .formats import (
     read_ths_from_bin_filenames_list,
@@ -139,6 +138,7 @@ from .formats import (
 )
 from .formats.ets_writer import ETSWriter, ETSWriterError, compress_ets
 from .formats.bin_format import PaddingMode
+from . import _version
 
 __all__ = [
     "Trace",
@@ -163,6 +163,8 @@ __all__ = [
 
 # Set default logging handler to avoid "No handler found" warnings.
 import logging
-from .__version__ import __author__ as AUTHOR, __version__ as VERSION, __author_email__ as AUTHOR_EMAIL  # noqa: F401, N812
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
+
+__version__ = _version.get_versions()['version']
+VERSION = _version.get_versions()['version']

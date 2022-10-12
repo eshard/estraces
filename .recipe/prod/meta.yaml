@@ -1,12 +1,13 @@
+{% set data = load_setup_py_data() %}
+
 package:
   name: estraces
-  version: 1.8.0
+  version: {{ data['version'] }}
 
 source:
-  path: ../
+  path: ../../
 
 build:
-  number: 0
   noarch: python
 
 requirements:
