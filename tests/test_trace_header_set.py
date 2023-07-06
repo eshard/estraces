@@ -100,12 +100,12 @@ def test_ths_slicing_raises_error_with_improper_types(ths):
     with pytest.raises(IndexError):
         ths[None]
     with pytest.raises(IndexError):
-        ths[float(1.6)]
+        ths[np.float32(1.6)]
 
 
 def test_ths_slicing_int_or_numpy_int(ths):
     expected = DATAS[1]
-    for t in (1, int(1), np.int32(1), np.int64(1)):
+    for t in (1, np.int8(1), np.int32(1), np.int64(1)):
         assert np.array_equal(ths[t].samples[:], expected)
 
 
