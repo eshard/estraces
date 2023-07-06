@@ -19,8 +19,8 @@ project = 'estraces'
 copyright = '2019-2022, eshard'
 author = 'eshard team'
 
-version = scared.__version__
-release = scared.__version__
+version = estraces.__version__
+release = estraces.__version__
 
 
 # -- General configuration ---------------------------------------------------
