@@ -4,12 +4,12 @@ from estraces import ETSWriter as _ETSWriter
 
 _SAMPLES_KEY = 'samples'
 
- 
+
 class _Dataset():
     def __init__(self, length):
         self.length = length
         self.data = None
-        self.last_index = None
+        self.current_index = None
 
     def write(self, data):
         """Write data at current dataset index.
@@ -23,52 +23,54 @@ class _Dataset():
         if data.ndim > 1:
             raise ValueError(f'Data must be at most 1D, but {data.ndim}D found')
         if self.data is None:
-            self.init(data)
+            self._init(data)
 
-        index = self.last_index + 1
-        if index >= self.length or index < 0:
-            raise ValueError(f'Given index {index} >= than the dataset length ({self.length}).')
+        if self.current_index >= self.length:
+            raise ValueError('Dataset is full.')
 
-        if self.data.ndim:
-            self.data[index, :len(data)] = data
+        if self.data.shape[1] != 1:
+            self.data[self.current_index, :len(data)] = data
         else:
-            self.data[index] = data
-        self.last_index = index
+            self.data[self.current_index] = data
+        self.current_index += 1
 
-    def init(self, data):
+    def _init(self, data):
         if data.ndim:
             self.data = _np.zeros_like(data, shape=(self.length, len(data)))
         else:
-            self.data = _np.zeros_like(data, shape=(self.length))
-        self.last_index = -1
+            self.data = _np.zeros_like(data, shape=(self.length, 1))
+        self.current_index = 0
 
-    def reset(self):
+    def _reset(self):
         self.data = None
-        self.last_index = None
+        self.current_index = None
 
     def get_data(self):
-        """Return last_index data and reset."""
-        if self.last_index is None or self.last_index == -1:
+        """Return data[:current_index + 1] and reset."""
+        if self.current_index is None or self.current_index == 0:
             to_return = None
         else:
-            to_return = self.data[:self.last_index + 1]
-        self.reset()
+            to_return = self.data[:self.current_index]
+        self._reset()
         return to_return
 
 
 class BufferedETSWriter():
     """Extend ETSWriter capabilities by adding a bufferization feature."""
+
     def __init__(self, filename, overwrite=False, buffer_length=None):
         """Create a Buffered ETS file writer instance.
 
         Args:
             filename (str): Path and filename to write the ETS.
             overwrite (bool, default=False): If True, any existing file with filename will be erased before writing data.
-            buffer_length (int): Length of the buffer, in number of traces. If None, the buffer size is computed accordingly to the trace size to be equal to 100MB.
+            buffer_length (int): Length of the buffer, in number of traces. If None, the buffer size is computed accordingly
+                to the trace size to be equal to 100MB.
 
         Once the buffer is full, all the data are write back into the ETS file and the buffer is reseted.
 
-        Note that this class provide only "atomic" operations, where samples and metadata are write together, in order to garanty consistency between samples and metadata.
+        Note that this class provide only "atomic" operations, where samples and metadata are write together, in order to garanty consistency
+             between samples and metadata.
 
         """
         self.ets_writer = _ETSWriter(filename, overwrite=overwrite)
@@ -85,10 +87,9 @@ class BufferedETSWriter():
         Args:
             trace_object (`Trace`): A `Trace` instance.
             points (numpy.ndarray): Samples to write.
-            index (int, default=None): Dummy argument, not taken into account, for compatibility with simple `ETSWriter` format.            
+            index (int, default=None): Dummy argument, not taken into account, for compatibility with simple `ETSWriter` format.
 
         """
-
         if self.buffer_length is None:
             self.buffer_length = int(100e6 / _np.array(points).nbytes)
         self._write_to_dataset(_SAMPLES_KEY, points)
@@ -100,19 +101,20 @@ class BufferedETSWriter():
 
     def flush(self):
         """Write the temporary data into the ETS file."""
-        for name1, dataset1 in self.datasets.items():        
+        for name1, dataset1 in self.datasets.items():
             for name2, dataset2 in self.datasets.items():
-                if dataset1.last_index != dataset2.last_index:
-                    raise ValueError(f'All Datasets must have the same length, but len({name1})={dataset1.last_index} and len({name2})={dataset2.last_index}')
+                if dataset1.current_index != dataset2.current_index:
+                    raise ValueError('All Datasets must have the same length, '
+                                     f'but len({name1})={dataset1.current_index} and len({name2})={dataset2.current_index}')
         for name, dataset in self.datasets.items():
-            # if dataset.last_index <= 0 or dataset.last_index is None:
-            #     return 
+            data = dataset.get_data()
+            if data is None:
+                return
             if name == _SAMPLES_KEY:
-                self.ets_writer.write_samples(dataset.get_data())
+                self.ets_writer.write_samples(data)
             else:
-                self.ets_writer.write_metadata(name, dataset.get_data())
+                self.ets_writer.write_metadata(name, data)
         self.cnt = 0
-
 
     def _write_to_dataset(self, dataset_name, data):
         if dataset_name not in self.datasets:
@@ -125,4 +127,4 @@ class BufferedETSWriter():
 
     def get_reader(self):
         self.flush()
-        self.ets_writer.get_reader()
+        return self.ets_writer.get_reader()
