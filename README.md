@@ -2,7 +2,7 @@
 
 [![pipeline status](https://gitlab.com/eshard/estraces/badges/master/pipeline.svg)](https://gitlab.com/eshard/estraces/commits/master)
 [![PyPI version](https://badge.fury.io/py/estraces.svg)](https://pypi.org/project/estraces/)
-[![Conda installer](https://anaconda.org/eshard/estraces/badges/installer/conda.svg)](https://anaconda.org/eshard/estraces)
+[![Conda installer](https://anaconda.org/eshard/estraces/badges/version.svg)](https://anaconda.org/eshard/estraces)
 [![Latest Conda release](https://anaconda.org/eshard/estraces/badges/latest_release_date.svg)](https://anaconda.org/eshard/estraces)
 
 estraces is a Python library to manipulate side-channel trace sets. It aims at giving a clear and uniform API to handle
@@ -10,15 +10,15 @@ traces samples and metadata for various persistency and file formats.
 It uses [Numpy](https://www.numpy.org) to handle data.
 
 estraces was originally developped and maintain by [eshard](https://www.eshard.com), and is heavily used in the open-source
-side-channel analysis framework.
+side-channel analysis framework [scared](https://gitlab.com/eshard/scared).
 
 ## Getting started
 
 ### Requirements and installation
 
-estraces requires and must work on Python **3.6**, **3.7**, **3.8**, **3.9** versions.
+estraces requires and must work on Python **3.6**, **3.7**, **3.8**, **3.9**, **3.10** versions.
 
-Python 3.6 is outdated now [EOL date](https://endoflife.date/python)
+Python 3.7 is outdated now [EOL date](https://endoflife.date/python)
 
 You can install it by several ways:
 
