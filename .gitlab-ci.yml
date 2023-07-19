@@ -98,9 +98,7 @@ deploy:conda:
     - cd .recipe
     - conda config --add channels $ANACONDA_CHANNEL
     - conda install anaconda-client
-    - anaconda login --username $ANACONDA_USERNAME --password $ANACONDA_PWD
-    - anaconda upload out/noarch/estraces*.tar.bz2
-    - anaconda logout
+    - anaconda -t $ANACONDA_TOKEN upload out/noarch/estraces*.tar.bz2
   when: manual
   artifacts:
     paths:
