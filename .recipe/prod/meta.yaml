@@ -17,7 +17,6 @@ requirements:
     - python {{ python }}
   run:
     - python
-    - mkl
     - h5py
     - numpy
     - trsfile
