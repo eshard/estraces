@@ -98,7 +98,7 @@ deploy:conda:
     - cd .recipe
     - conda config --add channels $ANACONDA_CHANNEL
     - conda install anaconda-client
-    - anaconda --token "$ANACONDA_TOKEN" "upload out/noarch/estraces*.tar.bz2"
+    - anaconda --token "$ANACONDA_TOKEN" upload "out/noarch/estraces*.tar.bz2"
   when: manual
   artifacts:
     paths:
