@@ -113,7 +113,11 @@ class BufferedETSWriter():
             if name == _SAMPLES_KEY:
                 self.ets_writer.write_samples(data)
             else:
-                self.ets_writer.write_metadata(name, data)
+                if data.dtype.kind in {'U', 'S'}:
+                    for d in data.squeeze():
+                        self.ets_writer.write_metadata(name, str(d))
+                else:
+                    self.ets_writer.write_metadata(name, data)
         self.cnt = 0
 
     def _write_to_dataset(self, dataset_name, data):
