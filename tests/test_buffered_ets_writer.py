@@ -136,3 +136,13 @@ def test_buffered_writer_raises_if_one_dataset_has_different_size(output_ets_fil
     bw.datasets[_SAMPLES_KEY].write(ets_reader[42].samples[:])
     with pytest.raises(ValueError, match='All Datasets must have the same length'):
         bw.flush()
+
+
+# https://gitlab.com/eshard/estraces/-/issues/40
+def test_buffered_writer_ok_with_strings(output_ets_filename, ets_reader):
+    bw = BufferedETSWriter(output_ets_filename, buffer_length=42)
+    for trace in ets_reader[:5]:
+        trace.foo = 'bar'
+        samples = trace.samples[:]
+        bw.write_trace_object_and_points(trace, samples)
+    bw.flush()

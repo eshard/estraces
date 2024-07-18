@@ -17,10 +17,9 @@ requirements:
     - python {{ python }}
   run:
     - python
-    - h5py
-    - numpy
-    - trsfile
-    - psutil
+    {% for dep in data['install_requires'] %}
+    - {{ dep.lower() }}
+    {% endfor %}
 
 about:
   home: https://gitlab.com/eshard/estraces
