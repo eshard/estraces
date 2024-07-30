@@ -50,10 +50,19 @@ test:python311:
     - pip install .[test]
     - pytest --color=yes -vv --cov=estraces tests
 
+test:python312:
+  stage: test
+  script:
+    - eval "$(conda shell.bash hook)"
+    - conda create -n env-python312 python=3.12 psutil
+    - conda activate env-python312
+    - pip install .[test]
+    - pytest --color=yes -vv --cov=estraces tests
+
 build:pypi:
   stage: build
   script:
-    - conda install python=3.8
+    - conda install python=3.10
     - pip install -U pip setuptools wheel
     - python setup.py sdist bdist_wheel
   only:
@@ -68,7 +77,7 @@ deploy:pypi:
     - tags
   when: manual
   script:
-    - conda install python=3.8
+    - conda install python=3.10
     - pip install -U pip setuptools wheel twine
     - twine upload --repository-url $PYPI_REPOSITORY dist/*  -u $PYPI_USERNAME -p $PYPI_PWD
 
@@ -87,7 +96,7 @@ build:conda:
   stage: build
   script:
     - cd .recipe
-    - conda install python=3.8 conda-build conda-verify
+    - conda install python=3.10 conda-build conda-verify
     - conda config --add channels $ANACONDA_CHANNEL
     - conda build --output-folder out prod
   only:
