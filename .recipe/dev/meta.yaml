@@ -29,7 +29,7 @@ test:
     - pytest
     - pytest-cov
     - mock
-    - memory_profiler >=0.61
+    - memory_profiler >=0.61.0
     - cloudpickle
   commands:
     - py.test
