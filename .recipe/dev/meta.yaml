@@ -20,7 +20,19 @@ requirements:
     {% for dep in data['install_requires'] %}
     - {{ dep.lower() }}
     {% endfor %}
-
+test:
+  imports:
+    - estraces
+  source_files:
+    - tests
+  requires:
+    - pytest
+    - pytest-cov
+    - mock
+    - memory_profiler
+    - cloudpickle
+  commands:
+    - py.test
 about:
   home: https://gitlab.com/eshard/estraces
   license: GNU LGPL V3
