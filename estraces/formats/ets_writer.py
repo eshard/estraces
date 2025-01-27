@@ -6,6 +6,8 @@ from .ets_format import read_ths_from_ets_file
 from ..traces import samples as _samples, metadatas as _metadata, trace as _trace, trace_header_set as _ths
 import logging
 import warnings
+from pathlib import Path as _Path
+
 
 logger = logging.getLogger(__name__)
 
@@ -295,16 +297,16 @@ def compress_ets(filename, out_filename):
     The trade-off is a somewhat slower reading from the resulting file.
 
     Args:
-        filename (str): filename of original uncompressed ETS file.
-        out_filename (str): filename of output compressed ETS file.
+        filename (str, pathlib.Path): filename of original uncompressed ETS file.
+        out_filename (str, pathlib.Path): filename of output compressed ETS file.
 
     Raises:
         ValueError if a file named out_filename already exists.
         AttributeError if the original file filename doesn't exists.
 
     """
-    if not isinstance(filename, str) or not isinstance(out_filename, str):
-        raise TypeError(f'filename and out_filename must be str, not {type(filename)}, {type(out_filename)}.')
+    if not isinstance(filename, (str, _Path)) or not isinstance(out_filename, (str, _Path)):
+        raise TypeError(f'filename and out_filename must be str or Path, not {type(filename)}, {type(out_filename)}.')
 
     if _os.path.exists(out_filename):
         raise ValueError(f'A file named {out_filename} already exists.')
@@ -319,7 +321,7 @@ def compress_ets(filename, out_filename):
         compression_opts=9
     )
     ets_compressed.create_group(METADATA_GROUP_KEY)
-
+    ets_compressed[METADATA_GROUP_KEY].attrs.update(dict(ths.headers))
     batch_size = _get_optimal_batch_size(ths)
 
     for i in range(0, len(ths), batch_size):
@@ -339,7 +341,7 @@ def compress_ets(filename, out_filename):
     ets_compressed.close()
 
 
-def _get_optimal_batch_size(ths, available_memory_ratio=0.5):
+def _get_optimal_batch_size(ths, available_memory_ratio=0.5, limit=8e9):
     base_trace = ths[0]
     unit_size = base_trace.samples[:].nbytes
     for k, v in base_trace.metadatas.items():
@@ -351,4 +353,4 @@ def _get_optimal_batch_size(ths, available_memory_ratio=0.5):
 
     if unit_size > available_mem:
         raise MemoryError(f"Not enough memory to load one trace (Available memory : {available_mem} bytes)")
-    return int(available_memory_ratio * available_mem / unit_size)
+    return int(min(available_memory_ratio * available_mem, limit) / unit_size)
