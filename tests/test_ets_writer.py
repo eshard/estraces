@@ -9,6 +9,7 @@ import os
 from estraces import ETSWriter
 from estraces import read_ths_from_ets_file
 import pytest
+from pathlib import Path
 
 nb_trace = 1000
 nb_points = 500
@@ -18,26 +19,22 @@ filename_1 = 'ETS1.ets'
 filename_2 = 'ETS2.ets'
 filename_3 = 'ETS3.ets'
 
+filenames = [filename, filename_1, filename_2, filename_3, compressed]
+
 
 @pytest.fixture
 def ets_filenames():
-    try:
-        os.remove(filename)
-        os.remove(compressed)
-        os.remove(filename_1)
-        os.remove(filename_2)
-        os.remove(filename_3)
-    except FileNotFoundError:
-        pass
-    yield [filename, filename_1, filename_2, filename_3, compressed]
-    try:
-        os.remove(filename)
-        os.remove(compressed)
-        os.remove(filename_1)
-        os.remove(filename_2)
-        os.remove(filename_3)
-    except FileNotFoundError:
-        pass
+    for fn in filenames:
+        try:
+            os.remove(fn)
+        except FileNotFoundError:
+            pass
+    yield filenames
+    for fn in filenames:
+        try:
+            os.remove(fn)
+        except FileNotFoundError:
+            pass
 
 
 def test_ets_writer_raises_exception_if_trying_to_replace_existing_data_wo_overwrite_mode(ets_filenames):
@@ -485,6 +482,17 @@ def test_write_samples(ets_filenames):
         assert np.array_equal(t.plaintext, plaintext[i])
 
 
+def test_ets_writer_accepts_paths_from_pathlib(ets_filenames):
+    out = ETSWriter(Path(filename), overwrite=True)
+
+    datas = np.random.randint(100, size=(nb_trace, nb_points), dtype=np.uint8)
+    plaintext = np.random.randint(256, size=(nb_trace, 16), dtype=np.uint8)
+    for index, data in enumerate(datas):
+        out.write_samples(data, index=index)
+        out.write_metadata('plaintext', plaintext[index], index=index)
+    out.get_reader()
+
+
 def test_write_trace_with_scalar_metadata(ets_filenames):
     datas = np.random.randint(0, 256, size=(nb_trace, nb_points), dtype=np.uint8)
     scals = np.random.randint(0, 256, (nb_trace,), dtype='uint8')
@@ -500,59 +508,6 @@ def test_write_trace_with_scalar_metadata(ets_filenames):
     ths_2 = out.get_reader()
 
     assert len(ths_2.scals) == nb_trace
-
-
-def test_compress_ets_raises_exception_if_filename_not_provided(ets_filenames):
-    with pytest.raises(TypeError):
-        estraces.compress_ets(out_filename='foo')
-    with pytest.raises(TypeError):
-        estraces.compress_ets(filename='foo')
-
-
-def test_compress_ets_raises_exception_on_bad_types(ets_filenames):
-    with pytest.raises(TypeError):
-        estraces.compress_ets(filename=1233, out_filename='foo')
-    with pytest.raises(TypeError):
-        estraces.compress_ets(filename='foo', out_filename=123)
-
-
-def test_compress_ets_raises_exception_if_original_file_doesnt_exist(ets_filenames):
-    with pytest.raises(AttributeError):
-        estraces.compress_ets(filename='foo', out_filename='bar')
-
-
-def test_compress_ets_raises_exception_if_original_outfile_exist(ets_filenames):
-    ets = estraces.ETSWriter(filename)
-    ets.add_trace_header_set(
-        estraces.read_ths_from_ram(
-            np.random.randint(0, 255, (100, 10), dtype='uint8')
-        )
-    )
-    ets.close()
-    with pytest.raises(ValueError):
-        estraces.compress_ets(filename='foo', out_filename=filename)
-    with pytest.raises(ValueError):
-        estraces.compress_ets(filename=filename, out_filename=filename)
-
-
-def test_compress_ets(ets_filenames):
-    ets = estraces.ETSWriter(filename, overwrite=True)
-    ths = estraces.read_ths_from_ram(
-        np.random.randint(-55000, 55000, (nb_trace, nb_points), dtype='int32'),
-        plaintext=np.random.randint(0, 256, (nb_trace, 16), dtype='uint8'),
-        ciphertext=np.random.randint(0, 256, (nb_trace, 16), dtype='uint8'),
-        chairs=np.array([f'chair{i}' for i in range(nb_trace)])
-    )
-    ets.add_trace_header_set(ths)
-    ths = ets.get_reader()
-    estraces.compress_ets(filename=filename, out_filename=compressed)
-    ths_comp = estraces.read_ths_from_ets_file(compressed)
-
-    assert np.array_equal(ths.samples[:], ths_comp.samples[:])
-    assert np.array_equal(ths.plaintext, ths_comp.plaintext)
-    assert np.array_equal(ths.ciphertext, ths_comp.ciphertext)
-    assert np.array_equal(ths.chairs, ths_comp.chairs)
-    assert os.path.getsize(filename) > 1.1 * os.path.getsize(compressed)
 
 
 def test_write_headers(ets_filenames):
@@ -590,13 +545,80 @@ def test_add_trace_header_set_with_headers(ets_filenames):
     assert ths.headers['bar'] == 'bar'
 
 
+########################################################################################
+#  Compression                                                                         #
+########################################################################################
+
+@pytest.fixture()
+def new_ets(ets_filenames):
+    ets = estraces.ETSWriter(filename, overwrite=True)
+    ths = estraces.read_ths_from_ram(
+        np.random.randint(-55000, 55000, (nb_trace, nb_points), dtype='int32'),
+        plaintext=np.random.randint(0, 256, (nb_trace, 16), dtype='uint8'),
+        ciphertext=np.random.randint(0, 256, (nb_trace, 16), dtype='uint8'),
+        chairs=np.array([f'chair{i}' for i in range(nb_trace)])
+    )
+    ets.add_trace_header_set(ths)
+    ets.write_headers({'foo': 'bar', 'plop': 42})
+    ths = ets.get_reader()
+    return ths
+
+
+def test_compress_ets_raises_exception_if_filename_not_provided(ets_filenames):
+    with pytest.raises(TypeError):
+        estraces.compress_ets(out_filename='foo')
+    with pytest.raises(TypeError):
+        estraces.compress_ets(filename='foo')
+
+
+def test_compress_ets_raises_exception_on_bad_types(ets_filenames):
+    with pytest.raises(TypeError, match='filename and out_filename must be str or Path, not'):
+        estraces.compress_ets(filename=1233, out_filename='foo')
+    with pytest.raises(TypeError, match='filename and out_filename must be str or Path, not'):
+        estraces.compress_ets(filename='foo', out_filename=123)
+
+
+def test_compress_ets_raises_exception_if_original_file_doesnt_exist(ets_filenames):
+    with pytest.raises(AttributeError):
+        estraces.compress_ets(filename='foo', out_filename='bar')
+
+
+def test_compress_ets_raises_exception_if_original_outfile_exist(new_ets):
+    with pytest.raises(ValueError):
+        estraces.compress_ets(filename='foo', out_filename=filename)
+    with pytest.raises(ValueError):
+        estraces.compress_ets(filename=filename, out_filename=filename)
+
+
+def test_compress_ets(new_ets):
+    estraces.compress_ets(filename=filename, out_filename=compressed)
+    ths_comp = estraces.read_ths_from_ets_file(compressed)
+    assert np.array_equal(new_ets.samples[:], ths_comp.samples[:])
+    assert np.array_equal(new_ets.plaintext, ths_comp.plaintext)
+    assert np.array_equal(new_ets.ciphertext, ths_comp.ciphertext)
+    assert np.array_equal(new_ets.chairs, ths_comp.chairs)
+    assert os.path.getsize(filename) > 1.1 * os.path.getsize(compressed)
+
+
+def test_compress_ets_accepts_paths_from_pathlib(new_ets):
+    estraces.compress_ets(filename=Path(filename), out_filename=Path(compressed))
+    estraces.read_ths_from_ets_file(Path(compressed))
+
+
+def test_compress_ets_keep_headers(new_ets):
+    estraces.compress_ets(filename=filename, out_filename=compressed)
+    ths_comp = estraces.read_ths_from_ets_file(compressed)
+    assert len(dict(ths_comp.headers)) > 0
+    assert dict(ths_comp.headers) == dict(new_ets.headers)
+
+
 def _get_virtual_memory_mock(v):
     def virtual_memory_wrapped():
         return 1, v
     return virtual_memory_wrapped
 
 
-@patch("psutil.virtual_memory", side_effect=_get_virtual_memory_mock(20000000))
+@patch("psutil.virtual_memory", side_effect=_get_virtual_memory_mock(20_000_000))
 def test_get_optimal_batch_size_with_size_lower_available_memory(virtual_memory_func):
     ths = estraces.read_ths_from_ram(
         np.random.randint(-55000, 55000, (nb_trace, nb_points), dtype='int32'),
@@ -605,9 +627,7 @@ def test_get_optimal_batch_size_with_size_lower_available_memory(virtual_memory_
         ciphertext=np.random.randint(0, 256, (nb_trace, 16), dtype='uint8'),
         chairs=np.array([f'chair{i}' for i in range(nb_trace)])
     )
-
     batch_size = _get_optimal_batch_size(ths)
-
     assert batch_size > 1
 
 
@@ -620,6 +640,19 @@ def test_get_optimal_batch_size_with_size_higher_available_memory(virtual_memory
         ciphertext=np.random.randint(0, 256, (nb_trace, 16), dtype='uint8'),
         chairs=np.array([f'chair{i}' for i in range(nb_trace)])
     )
-
     with pytest.raises(MemoryError):
         _get_optimal_batch_size(ths)
+
+
+@patch("psutil.virtual_memory", side_effect=_get_virtual_memory_mock(32e9))
+def test_get_optimal_batch_size_takes_limit_into_account(virtual_memory_func):
+    ths = estraces.read_ths_from_ram(
+        np.random.randint(-55000, 55000, (nb_trace, nb_points), dtype='int32'),
+        headers=_HEADERS,
+        plaintext=np.random.randint(0, 256, (nb_trace, 16), dtype='uint8'),
+        ciphertext=np.random.randint(0, 256, (nb_trace, 16), dtype='uint8'),
+        chairs=np.array([f'chair{i}' for i in range(nb_trace)])
+    )
+    reference_batch_size = _get_optimal_batch_size(ths, available_memory_ratio=1, limit=256e9)
+    assert _get_optimal_batch_size(ths, available_memory_ratio=1, limit=16e9) == reference_batch_size // 2
+    assert _get_optimal_batch_size(ths, available_memory_ratio=1, limit=17e9) != reference_batch_size // 2

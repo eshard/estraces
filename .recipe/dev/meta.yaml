@@ -13,8 +13,10 @@ build:
 requirements:
   build:
     - wheel
+    - setuptools
   host:
     - python {{ python }}
+    - setuptools
   run:
     - python
     {% for dep in data['install_requires'] %}
