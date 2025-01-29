@@ -524,3 +524,8 @@ def test_serialization(ths):
     assert np.array_equal(loaded_ths.my_property_3[:], ths.my_property_3[:])
     assert np.array_equal(loaded_ths.my_property_4[:], ths.my_property_4[:])
     assert np.array_equal(loaded_ths.my_property_5[:], ths.my_property_5[:])
+
+
+# see https://gitlab.com/eshard/estraces/-/issues/45
+def test_filename_property(ths):
+    assert np.array_equal(ths.filename, ths._reader._filenames)

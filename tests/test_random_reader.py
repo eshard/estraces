@@ -156,3 +156,9 @@ def test_serialization():
     assert loaded_ths.samples[:].dtype == ths.samples[:].dtype
     assert loaded_ths.plaintext[:].shape == ths.plaintext[:].shape
     assert loaded_ths.plaintext[:].dtype == ths.plaintext[:].dtype
+
+
+# see https://gitlab.com/eshard/estraces/-/issues/45
+def test_filename_property():
+    ths = random_reader.read_ths_from_random(100, 1000, plaintext=(16, 'uint8'))
+    assert ths.filename is None
