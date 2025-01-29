@@ -260,3 +260,8 @@ def test_read_with_strings(ets_file):
         for value in metadata:
             assert isinstance(value, str)
         print('is of type ', type(value))
+
+
+# see https://gitlab.com/eshard/estraces/-/issues/45
+def test_filename_property(ets1):
+    assert ets1.filename == path

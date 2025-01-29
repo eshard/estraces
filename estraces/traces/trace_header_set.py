@@ -239,6 +239,14 @@ class TraceHeaderSet:
             self._samples = samples.Samples(reader=self._reader)
         return self._samples
 
+    @property
+    def filename(self):
+        """If relevant, return the filename of the file containing the data, else return None."""
+        try:
+            return self._reader._filename
+        except AttributeError:
+            return None
+
     def split(self, part_size):
         """Return an iterable of :class:`TraceHeaderSet` slices of at least length ``part_size``.
 

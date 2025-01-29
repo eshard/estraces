@@ -138,3 +138,8 @@ def test_serialization(ram1):
     assert np.array_equal(loaded_ths.plaintext[:], ths.plaintext[:])
     assert np.array_equal(loaded_ths.foo_bar[:], ths.foo_bar[:])
     assert np.array_equal(loaded_ths.ciphertext[:], ths.ciphertext[:])
+
+
+# see https://gitlab.com/eshard/estraces/-/issues/45
+def test_filename_property(ram1):
+    assert ram1.filename is None

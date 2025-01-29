@@ -165,3 +165,8 @@ def test_trsv1_without_metadata_parser_raises():
 def test_old_trsfile_version_without_metadata_parser_raises():
     with pytest.raises(TypeError, match='Setting a TRS reader with `metadatas_parsers=None` allowed only '):
         read_ths_from_trs_file(TRS_FILENAME, dtype='float32', metadatas_parsers=None)
+
+
+# see https://gitlab.com/eshard/estraces/-/issues/45
+def test_filename_property(trs):
+    assert trs.filename == TRS_FILENAME

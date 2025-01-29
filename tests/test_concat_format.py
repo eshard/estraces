@@ -148,3 +148,8 @@ def test_concat_keeps_order():
     ths = concat_format.read_ths_from_multiple_ths(*ths_list)
     for i in range(10):
         assert np.array_equal(ths_list[i].samples[:], ths.samples[i * 100:(i + 1) * 100]), 'Concatenation does not guarantee order.'
+
+
+# see https://gitlab.com/eshard/estraces/-/issues/45
+def test_filename_property(concat1):
+    assert concat1.filename is None

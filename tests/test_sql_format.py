@@ -278,3 +278,13 @@ def test_samples_shape_is_not_too_slow(lots_of_traces):
     s_ths = ths[:10]
     t2 = timeit.timeit(stm, globals={'s_ths': s_ths}, number=10)
     assert t1 / t2 < 10
+
+
+# see https://gitlab.com/eshard/estraces/-/issues/45
+def test_filename_property(filename):
+    ths = estraces.read_ths_from_sqlite(
+        filename,
+        samples_config=sqlite_format.SamplesConfig(),
+        metadata_config=sqlite_format.MetadataConfig(metadata_defs={'plaintext': 'uint8'})
+    )
+    assert ths.filename == test_path
