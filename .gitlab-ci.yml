@@ -9,19 +9,11 @@ stages:
 lint:
   stage: lint
   script:
+    - apt-get update && apt-get install -y build-essential
     # - conda install python=3.8 psutil
     - pip install -e .
     - pip install flake8 pep8-naming flake8-docstrings
     - flake8 --config=.flake8 estraces tests setup.py
-
-test:python38:
-  stage: test
-  script:
-    - eval "$(conda shell.bash hook)"
-    - conda create -n env-python38 python=3.8 psutil
-    - conda activate env-python38
-    - pip install .[test]
-    - pytest --color=yes -vv --cov=estraces tests
 
 test:python39:
   stage: test
