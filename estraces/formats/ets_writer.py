@@ -53,7 +53,7 @@ class ETSWriter:
                 tmp.close()
             f.close()
         except OSError as e:
-            logger.error(f'Exception raised during init of h5f file: {e}.')
+            pass
 
     def _init_file(self):
         self._close_all()
