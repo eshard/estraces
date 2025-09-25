@@ -92,6 +92,7 @@ build-dev:conda:
   artifacts:
     paths:
       - ".recipe/out/*/*.tar.bz2"
+      - ".recipe/out/*/*.conda"
 
 build:conda:
   stage: build
@@ -106,6 +107,7 @@ build:conda:
   artifacts:
     paths:
       - ".recipe/out/*/*.tar.bz2"
+      - ".recipe/out/*/*.conda"
 
 deploy:conda:
   stage: deploy
@@ -118,6 +120,7 @@ deploy:conda:
   artifacts:
     paths:
       - ".recipe/out/*/*.tar.bz2"
+      - ".recipe/out/*/*.conda"
 
 pages:
   stage: build

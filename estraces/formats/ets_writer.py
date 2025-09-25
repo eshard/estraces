@@ -43,6 +43,8 @@ class ETSWriter:
 
     def _close_all(self):
         try:
+            if not _os.path.exists(self._filename):
+                return
             f = _h5py.File(self._filename, 'r')
             to_close = _h5py.h5f.get_obj_ids(f.id)
             for fid in to_close:
