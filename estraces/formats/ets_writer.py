@@ -52,7 +52,7 @@ class ETSWriter:
                 tmp.flush()
                 tmp.close()
             f.close()
-        except OSError as e:
+        except OSError:
             pass
 
     def _init_file(self):
