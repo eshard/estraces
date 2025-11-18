@@ -7,12 +7,13 @@ name = "estraces"
 dynamic = ["version"]
 description = "Traces and trace header set Python library for side-channel analysis."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 license = {text = "LGPL-3.0-only"}
 authors = [
     {name = "eshard", email = "estraces@eshard.com"}
 ]
 classifiers = [
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",

@@ -12,7 +12,7 @@ build:
 
 requirements:
   host:
-    - python >=3.11
+    - python >=3.10
     - pip
     - setuptools >=64
     - setuptools-scm >=8

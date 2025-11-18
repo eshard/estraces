@@ -16,11 +16,11 @@ side-channel analysis framework [scared](https://gitlab.com/eshard/scared).
 
 ### Requirements and installation
 
-estraces requires Python **3.11** or higher (3.11, 3.12, 3.13).
+estraces requires Python **3.10** or higher (3.10, 3.11, 3.12, 3.13).
 
 The library uses modern Python packaging standards (PEP 517/518/621) with `pyproject.toml` and requires:
 - NumPy **2.0** or higher
-- Python **3.11+**
+- Python **3.10+**
 
 You can install it by several ways:
 
@@ -46,7 +46,7 @@ pip install git+https://gitlab.com/eshard/estraces.git
 
 To install estraces from source, you will need:
 
-- Python 3.11 or higher
+- Python 3.10 or higher
 - `pip` and `build` tools
 
 Clone the repository and install:
@@ -74,7 +74,7 @@ conda install -c eshard estraces
 Or create a new environment with estraces:
 
 ```bash
-conda create -n myenv python=3.11 -c eshard estraces
+conda create -n myenv python=3.10 -c eshard estraces
 conda activate myenv
 ```
 
