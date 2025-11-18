@@ -138,7 +138,7 @@ from .formats import (
 )
 from .formats.ets_writer import ETSWriter, ETSWriterError, compress_ets
 from .formats.bin_format import PaddingMode
-from . import _version
+# Version is managed by setuptools-scm
 
 __all__ = [
     "Trace",
@@ -166,5 +166,17 @@ import logging
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
-__version__ = _version.get_versions()['version']
-VERSION = _version.get_versions()['version']
+# Get version from package metadata (managed by setuptools-scm)
+try:
+    from importlib.metadata import version, PackageNotFoundError
+except ImportError:
+    # Python < 3.8
+    from importlib_metadata import version, PackageNotFoundError
+
+try:
+    __version__ = version("estraces")
+    VERSION = __version__
+except PackageNotFoundError:
+    # Package is not installed, use a development version
+    __version__ = "0.0.0+unknown"
+    VERSION = __version__

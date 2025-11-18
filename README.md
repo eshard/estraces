@@ -16,51 +16,66 @@ side-channel analysis framework [scared](https://gitlab.com/eshard/scared).
 
 ### Requirements and installation
 
-estraces requires and must work on Python **3.6**, **3.7**, **3.8**, **3.9**, **3.10** versions.
+estraces requires Python **3.11** or higher (3.11, 3.12, 3.13).
 
-Python 3.7 is outdated now [EOL date](https://endoflife.date/python)
+The library uses modern Python packaging standards (PEP 517/518/621) with `pyproject.toml` and requires:
+- NumPy **2.0** or higher
+- Python **3.11+**
 
 You can install it by several ways:
 
-- from source
-- with `pip`
+- with `pip` (recommended)
 - with `conda`
-
->At time of writing, we highly recommend to install from `conda` when using `estraces` with **python 3.8**.
-
-#### Installing from source
-
-To install estraces from source, you will need the following requirements:
-
-- `pip` and `setuptools` with version greater than **40.0**
-- For Python **3.8**, you'll need to build and install `h5py` from source see [H5PY installation instructions](https://h5py.readthedocs.io/en/latest/build.html#source-installation) before installing `estraces`
-
-From the source code folder, run:
-
-```python
-pip install .
-```
+- from source
 
 #### Installing with `pip`
 
-First, you should update your `pip` and `setuptools` version:
-
-```bash
-pip install -U pip setuptools
-```
-
-If you use **Python 3.8** or above, you must first build and install `h5py`, [see instructions](https://h5py.readthedocs.io/en/latest/build.html#source-installation).
+Simply install using pip:
 
 ```bash
 pip install estraces
 ```
 
-#### Installing with  `conda`
+For the latest development version:
 
-To install from `conda`, simply run:
+```bash
+pip install git+https://gitlab.com/eshard/estraces.git
+```
+
+#### Installing from source
+
+To install estraces from source, you will need:
+
+- Python 3.11 or higher
+- `pip` and `build` tools
+
+Clone the repository and install:
+
+```bash
+git clone https://gitlab.com/eshard/estraces.git
+cd estraces
+pip install .
+```
+
+For development (editable install with test dependencies):
+
+```bash
+pip install -e ".[test]"
+```
+
+#### Installing with `conda`
+
+To install from `conda`:
 
 ```bash
 conda install -c eshard estraces
+```
+
+Or create a new environment with estraces:
+
+```bash
+conda create -n myenv python=3.11 -c eshard estraces
+conda activate myenv
 ```
 
 ### Opens a trace set

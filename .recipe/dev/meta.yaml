@@ -1,27 +1,27 @@
-{% set data = load_setup_py_data() %}
-
 package:
   name: estraces-dev
-  version: {{ data['version'] }}
+  # Version will be determined by setuptools-scm from git tags
+  version: {{ environ.get('GIT_DESCRIBE_TAG', '0.0.0').lstrip('v') }}
 
 source:
   path: ../../
 
 build:
   noarch: python
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
 
 requirements:
-  build:
-    - wheel
-    - setuptools
   host:
-    - python {{ python }}
-    - setuptools
+    - python >=3.11
+    - pip
+    - setuptools >=64
+    - setuptools-scm >=8
   run:
-    - python
-    {% for dep in data['install_requires'] %}
-    - {{ dep.lower() }}
-    {% endfor %}
+    - python >=3.11
+    - numpy >=2
+    - h5py
+    - trsfile
+    - psutil
 test:
   imports:
     - estraces

@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "estraces"
+dynamic = ["version"]
+description = "Traces and trace header set Python library for side-channel analysis."
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "LGPL-3.0-only"}
+authors = [
+    {name = "eshard", email = "estraces@eshard.com"}
+]
+classifiers = [
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Framework :: Jupyter",
+    "Framework :: IPython",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Security",
+    "Topic :: Software Development",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy>=2",
+    "h5py",
+    "trsfile",
+    "psutil",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-cov",
+    "mock",
+    "memory_profiler>=0.61.0",
+    "cloudpickle",
+]
+
+[project.urls]
+Homepage = "https://gitlab.com/eshard/estraces"
+Documentation = "https://eshard.gitlab.io/estraces"
+Issues = "https://gitlab.com/eshard/estraces/issues"
+"eShard" = "https://www.eshard.com"
+
+[tool.setuptools]
+zip-safe = false
+include-package-data = true
+
+[tool.setuptools.packages.find]
+exclude = ["tests"]
+
+[tool.setuptools-scm]
+version_file = "estraces/_version.py"
+# Uses git tags for version management
+# To create a version: git tag v1.2.3 && git push --tags
