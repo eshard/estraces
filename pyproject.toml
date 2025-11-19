@@ -59,7 +59,7 @@ include-package-data = true
 [tool.setuptools.packages.find]
 exclude = ["tests"]
 
-[tool.setuptools-scm]
+[tool.setuptools_scm]
 version_file = "estraces/_version.py"
 # Uses git tags for version management
 # To create a version: git tag v1.2.3 && git push --tags
